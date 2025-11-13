@@ -1,0 +1,228 @@
+<div id="app">
+  <header class="app-header">
+    <div>
+      <div class="app-title">Voices of the Void</div>
+      <div class="app-subtitle">
+        Procedural language / conlang generator
+      </div>
+    </div>
+
+    <div class="button-row">
+      <button id="generateBtn" class="btn btn-primary">
+        <span class="dot"></span>
+        Generate Language
+      </button>
+      <button id="editPhonemesBtn" class="btn btn-secondary">
+        Edit Phonemes
+      </button>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <!-- LEFT PANEL: controls -->
+    <section class="panel panel-left">
+      <div class="panel-header">
+        <div class="panel-title">Language Setup</div>
+        <div class="panel-label">Presets · Phonology · Morphology · Script</div>
+      </div>
+
+      <!-- Preset pills -->
+      <div class="form-group">
+        <label>Presets</label>
+        <div id="presetRow" class="preset-row"></div>
+      </div>
+
+      <!-- PHONOLOGY + PHONOTACTICS -->
+      <div class="section-heading">Phonology &amp; Phonotactics</div>
+
+      <div class="form-group">
+        <label for="phonInventorySelect">Phonetic inventory</label>
+        <select id="phonInventorySelect">
+          <option value="simple-5">Simple (5 vowels, light consonants)</option>
+          <option value="balanced">Balanced (medium inventory)</option>
+          <option value="dense">Dense / complex</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="phonClassSelect">Phoneme classes</label>
+        <select id="phonClassSelect">
+          <option value="cv">C / V only</option>
+          <option value="cvl">C / V / L (liquids)</option>
+          <option value="cvlx">C / V / L / extra fricatives</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="syllableShapeSelect">Syllable templates</label>
+          <select id="syllableShapeSelect">
+            <option value="cv">CV</option>
+            <option value="cvc">CVC</option>
+            <option value="cv-cv">CV · CV</option>
+            <option value="ccvc">CCVC</option>
+            <option value="cvcc">CVCC</option>
+            <option value="wild">Mixed / complex</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="maxSyllablesSelect">Max syllables / word</label>
+          <select id="maxSyllablesSelect">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5+</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- consonant / vowel display -->
+      <div class="form-row">
+        <div class="phoneme-box">
+          <span class="label">Consonants</span>
+          <div id="consonantDisplay"></div>
+        </div>
+        <div class="phoneme-box">
+          <span class="label">Vowels</span>
+          <div id="vowelDisplay"></div>
+        </div>
+      </div>
+
+      <!-- MORPHOLOGY + SYNTAX -->
+      <div class="section-heading">Morphology &amp; Syntax</div>
+
+      <div class="form-group">
+        <label for="wordOrderSelect">Basic word order</label>
+        <select id="wordOrderSelect">
+          <option value="svo">SVO</option>
+          <option value="sov">SOV</option>
+          <option value="vso">VSO</option>
+          <option value="vos">VOS</option>
+          <option value="osv">OSV</option>
+          <option value="ovs">OVS</option>
+          <option value="free">Free word order</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="nounMorphSelect">Noun morphology</label>
+          <select id="nounMorphSelect">
+            <option value="isolating">Isolating (little inflection)</option>
+            <option value="light">Light case / number</option>
+            <option value="rich">Rich case / gender / number</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="verbMorphSelect">Verb morphology</label>
+          <select id="verbMorphSelect">
+            <option value="isolating">Isolating</option>
+            <option value="light">Light tense/aspect</option>
+            <option value="rich">Rich tense/aspect/mood</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="derivationSelect">Word derivation style</label>
+        <select id="derivationSelect">
+          <option value="suffixing">Mostly suffixing</option>
+          <option value="prefixing">Mostly prefixing</option>
+          <option value="mixed">Mixed affixes</option>
+        </select>
+      </div>
+
+      <!-- LEXICON -->
+      <div class="section-heading">Lexicon &amp; Vocabulary</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="vocabSizeSelect">Vocabulary size</label>
+          <select id="vocabSizeSelect">
+            <option value="proto">Tiny proto-language</option>
+            <option value="small">Small</option>
+            <option value="medium">Medium</option>
+            <option value="large">Large</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="properNounSelect">Proper names</label>
+          <select id="properNounSelect">
+            <option value="none">None yet</option>
+            <option value="simple">Simple names only</option>
+            <option value="rich">Rich name system</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="etymologySelect">Etymology depth</label>
+        <select id="etymologySelect">
+          <option value="none">None</option>
+          <option value="light">Light history</option>
+          <option value="layered">Layered / historical</option>
+        </select>
+      </div>
+
+      <!-- WRITING SYSTEM -->
+      <div class="section-heading">Writing System</div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="scriptTypeSelect">Script type</label>
+          <select id="scriptTypeSelect">
+            <option value="logography">Logography</option>
+            <option value="syllabary">Syllabary</option>
+            <option value="alphabet">Alphabet</option>
+            <option value="abjad">Abjad (consonants)</option>
+            <option value="abugida">Abugida (C + vowel marks)</option>
+            <option value="featural">Featural script</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="directionSelect">Directionality</label>
+          <select id="directionSelect">
+            <option value="ltr">Left → Right</option>
+            <option value="rtl">Right → Left</option>
+            <option value="ttb">Top → Bottom</option>
+            <option value="btt">Bottom → Top</option>
+            <option value="boustro">Boustrophedon</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL: preview / output -->
+    <section class="panel panel-right">
+      <div class="panel-header">
+        <div class="panel-title">Language Preview</div>
+        <div class="panel-label">Spec · Alphabet · Sentences</div>
+      </div>
+
+      <div class="output-scroll">
+        <div id="presetSummary" class="language-meta"></div>
+        <div id="phonemeSummary" class="language-meta"></div>
+        <div id="patternSummary" class="language-meta"></div>
+
+        <div class="alphabet-section-title">Full spec (for generator)</div>
+        <pre id="specPreview" class="language-meta"
+             style="white-space: pre-wrap;"></pre>
+
+        <div class="alphabet-section-title">Sample alphabet / script</div>
+        <div id="output-alphabet" class="alphabet-grid"></div>
+
+        <div class="alphabet-section-title">Sample sentences</div>
+        <div id="output-sentences" class="sentence-list"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- scripts -->
+<script src="src/presets.js"></script>
+<script src="src/ui.js"></script>
