@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Voices of Void</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <header class="app-header">
+      <div class="app-title-block">
+        <h1 class="app-title">VOICES OF VOID</h1>
+        <p class="app-subtitle">proto-language workbench</p>
+      </div>
+    </header>
+
+    <main class="app-main">
+      <section class="left-panel">
+        <div class="control-section">
+          <h2 class="section-title">language presets</h2>
+          <div id="preset-buttons" class="preset-button-row"></div>
+        </div>
+
+        <div class="control-section">
+          <h2 class="section-title">grammar</h2>
+
+          <label class="field-label" for="word-order-select">word order</label>
+          <select id="word-order-select" class="select-input"></select>
+
+          <label class="field-label" for="syllable-pattern-select">syllable pattern</label>
+          <select id="syllable-pattern-select" class="select-input"></select>
+
+          <label class="field-label" for="max-syllables-select">max syllables per word</label>
+          <select id="max-syllables-select" class="select-input"></select>
+        </div>
+
+        <div class="control-section">
+          <h2 class="section-title">phonology</h2>
+
+          <label class="field-label" for="consonants-input">consonants (space-separated)</label>
+          <textarea id="consonants-input" class="text-input" rows="3"></textarea>
+
+          <label class="field-label" for="vowels-input">vowels (space-separated)</label>
+          <textarea id="vowels-input" class="text-input" rows="3"></textarea>
+        </div>
+
+        <div class="control-section">
+          <h2 class="section-title">writing system</h2>
+
+          <label class="field-label" for="writing-system-select">system type</label>
+          <select id="writing-system-select" class="select-input"></select>
+
+          <label class="field-label" for="script-direction-select">direction</label>
+          <select id="script-direction-select" class="select-input"></select>
+        </div>
+
+        <div class="control-actions">
+          <button id="reset-to-preset" class="pill-button pill-secondary" type="button">reset to preset</button>
+          <button id="send-to-generator" class="pill-button pill-primary" type="button">send to generator</button>
+        </div>
+      </section>
+
+      <section class="right-panel">
+        <section class="language-header">
+          <h2 id="language-name" class="language-name"></h2>
+          <p id="language-tagline" class="language-tagline"></p>
+        </section>
+
+        <section class="info-grid">
+          <article class="info-card">
+            <div class="card-header">
+              <div>
+                <div class="card-kicker">phonology</div>
+                <h3 class="card-title">sound shape</h3>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="meta-phonology" class="meta-block"></div>
+            </div>
+          </article>
+
+          <article class="info-card">
+            <div class="card-header">
+              <div>
+                <div class="card-kicker">morphology</div>
+                <h3 class="card-title">word building</h3>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="meta-morphology" class="meta-block"></div>
+            </div>
+          </article>
+
+          <article class="info-card">
+            <div class="card-header">
+              <div>
+                <div class="card-kicker">lexicon</div>
+                <h3 class="card-title">dictionary feel</h3>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="meta-lexicon" class="meta-block"></div>
+            </div>
+          </article>
+
+          <article class="info-card">
+            <div class="card-header">
+              <div>
+                <div class="card-kicker">writing</div>
+                <h3 class="card-title">script</h3>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="meta-writing" class="meta-block"></div>
+            </div>
+          </article>
+        </section>
+
+        <section class="lexicon-section">
+          <article class="info-card" id="alphabet-card">
+            <div class="card-header">
+              <div>
+                <div class="card-kicker">alphabet</div>
+                <h3 class="card-title">phoneme inventory</h3>
+              </div>
+            </div>
+            <div class="alphabet-grid" id="alphabet-grid"></div>
+          </article>
+
+          <article class="sentence-section">
+            <div class="card-header card-header-with-button">
+              <div>
+                <div class="card-kicker">examples</div>
+                <h3 class="card-title">sample sentences</h3>
+              </div>
+              <button id="reroll-sentences" class="pill-button pill-small pill-secondary" type="button">reroll</button>
+            </div>
+            <div class="sentence-list" id="sentence-list"></div>
+          </article>
+
+          <section class="info-card">
+            <div class="card-header">
+              <div>
+                <div class="card-kicker">mini dictionary</div>
+                <h3 class="card-title">word categories</h3>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="word-category-summary" class="meta-block"></div>
+
+              <div class="lexicon-grid">
+                <article class="lexicon-card">
+                  <div class="card-header">
+                    <div>
+                      <div class="card-kicker">mini dictionary</div>
+                      <h3 class="card-title">conjunctions</h3>
+                    </div>
+                  </div>
+                  <div class="lexicon-table">
+                    <div class="lex-row lex-header">
+                      <div class="lex-col">word</div>
+                      <div class="lex-col">meaning</div>
+                    </div>
+                    <div id="lexicon-conjunctions-body"></div>
+                  </div>
+                </article>
+
+                <article class="lexicon-card">
+                  <div class="card-header">
+                    <div>
+                      <div class="card-kicker">mini dictionary</div>
+                      <h3 class="card-title">prepositions</h3>
+                    </div>
+                  </div>
+                  <div class="lexicon-table">
+                    <div class="lex-row lex-header">
+                      <div class="lex-col">word</div>
+                      <div class="lex-col">meaning</div>
+                    </div>
+                    <div id="lexicon-prepositions-body"></div>
+                  </div>
+                </article>
+
+                <article class="lexicon-card">
+                  <div class="card-header">
+                    <div>
+                      <div class="card-kicker">mini dictionary</div>
+                      <h3 class="card-title">pronouns</h3>
+                    </div>
+                  </div>
+                  <div class="lexicon-table">
+                    <div class="lex-row lex-header">
+                      <div class="lex-col">word</div>
+                      <div class="lex-col">meaning</div>
+                    </div>
+                    <div id="lexicon-pronouns-body" class="lex-body"></div>
+                  </div>
+                </article>
+
+                <article class="lexicon-card">
+                  <div class="card-header">
+                    <div>
+                      <div class="card-kicker">mini dictionary</div>
+                      <h3 class="card-title">verbs</h3>
+                    </div>
+                  </div>
+                  <div class="lexicon-table">
+                    <div class="lex-row lex-header">
+                      <div class="lex-col">word</div>
+                      <div class="lex-col">meaning</div>
+                    </div>
+                    <div id="lexicon-verbs-body"></div>
+                  </div>
+                </article>
+
+                <article class="lexicon-card">
+                  <div class="card-header">
+                    <div>
+                      <div class="card-kicker">mini dictionary</div>
+                      <h3 class="card-title">descriptors</h3>
+                    </div>
+                  </div>
+                  <div class="lexicon-table">
+                    <div class="lex-row lex-header">
+                      <div class="lex-col">word</div>
+                      <div class="lex-col">meaning</div>
+                    </div>
+                    <div id="lexicon-descriptors-body"></div>
+                  </div>
+                </article>
+
+                <article class="lexicon-card">
+                  <div class="card-header">
+                    <div>
+                      <div class="card-kicker">mini dictionary</div>
+                      <h3 class="card-title">nouns</h3>
+                    </div>
+                  </div>
+                  <div class="lexicon-table">
+                    <div class="lex-row lex-header">
+                      <div class="lex-col">word</div>
+                      <div class="lex-col">meaning</div>
+                    </div>
+                    <div id="lexicon-nouns-body"></div>
+                  </div>
+                </article>
+
+                <article class="lexicon-card">
+                  <div class="card-header">
+                    <div>
+                      <div class="card-kicker">mini dictionary</div>
+                      <h3 class="card-title">articles</h3>
+                    </div>
+                  </div>
+                  <div class="lexicon-table">
+                    <div class="lex-row lex-header">
+                      <div class="lex-col">word</div>
+                      <div class="lex-col">meaning</div>
+                    </div>
+                    <div id="lexicon-articles-body"></div>
+                  </div>
+                </article>
+              </div>
+            </div>
+          </section>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="src/presets.js"></script>
+  <script src="src/generator.js"></script>
+  <script src="src/ui.js"></script>
+</body>
+</html>
