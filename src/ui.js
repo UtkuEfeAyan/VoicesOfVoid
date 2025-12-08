@@ -1,23 +1,23 @@
 // ui.js
-// handles dom, reads from presets.js, and keeping a simple editable config.
-// dom stuff was suggested by my father who is a software engineer for more dynamic and easier handling
-// also he said that it would help with structuring the code better and making it more modular
-// i learned a lot from that advice while working on this project as it pushed me to learn a new system
-// watched some tutorials in how to use dom and with some questioning and help it was done
-// i think it will be easier to expand in the future if i want to add more features as well
-// also looks clearer and easier to read to my brain especially after labeling everything properly
+// Handles DOM, reads from prests.js, and keeping a simple editable config.
+//DOM stuff was sugested by my father(who is a software engineer) for more dynamic and easier handling/editing
+// also  he said that it would help me with structuring the code better and making it more modular
+// i learned a lot from that advice while working on this project as it pushed me to learn a new sytem(DOMS)
+// watched some tutoriels in how to use doms and with some questioning and help it was done
+//i think it will be easier to expand in the future if i want to add more features as well
+// also looks clearer and easier to read (to my brain at least(especially after labeleing everything properly))
 
 const uiState = {
   activePresetId: "elven",
   config: null
 };
 
-// convenience, copy so edits dont mutate the original preset no buggy references
+// convenience, copy so edits don't mutate the original preset(no bugy references)
 function clonePreset(preset) {
   return JSON.parse(JSON.stringify(preset));
 }
 
-// option labels
+// option labels   
 const WORD_ORDER_OPTIONS = [
   { value: "svo", label: "SVO — subject–verb–object" },
   { value: "sov", label: "SOV — subject–object–verb" },
@@ -40,7 +40,7 @@ const SCRIPT_DIRECTION_OPTIONS = [
   { value: "btt", label: "Bottom → Top" }
 ];
 
-// includes the patterns you use in presets
+// includes the patterns you  use in presets
 const SYLLABLE_PATTERN_OPTIONS = [
   { value: "cv", label: "CV" },
   { value: "cvc", label: "CVC" },
@@ -53,7 +53,7 @@ const SYLLABLE_PATTERN_OPTIONS = [
   { value: "c-lv", label: "C–LV" }
 ];
 
-// dom refs
+// DOM refs   
 const dom = {
   presetButtonsContainer: document.getElementById("preset-buttons"),
 
@@ -83,10 +83,10 @@ const dom = {
 
   alphabetGrid: document.getElementById("alphabet-grid"),
   sentenceList: document.getElementById("sentence-list")
-  // note: lexicon list is handled directly in generator.js with getelementbyid
+  // note: lexicon list is handled directly in generator.js with getElementById
 };
 
-//init
+//init   
 document.addEventListener("DOMContentLoaded", function () {
   buildPresetButtons();
   buildSelect(dom.wordOrderSelect, WORD_ORDER_OPTIONS);
@@ -112,7 +112,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 });
 
-//building ui pieces
+//building UI pieces   
 function buildPresetButtons() {
   if (!dom.presetButtonsContainer) {
     console.warn("preset-buttons container not found.");
@@ -167,7 +167,7 @@ function buildMaxSyllableSelect(selectEl, min, max) {
   }
 }
 
-//event listeners
+//event listeners   
 function attachListeners() {
   if (dom.wordOrderSelect) {
     dom.wordOrderSelect.addEventListener("change", function (event) {
@@ -241,20 +241,17 @@ function attachListeners() {
     });
   }
 
-  // reroll lexicon button
-  const rerollLexiconBtn = document.getElementById("reroll-lexicon");
-  if (rerollLexiconBtn) {
-    rerollLexiconBtn.addEventListener("click", function () {
+  // small extra buttons for rerolling generator output (no fancy stuff)
+  if (dom.rerollLexiconButton) {
+    dom.rerollLexiconButton.addEventListener("click", function () {
       if (window.LanguageGenerator && typeof window.LanguageGenerator.rerollLexicon === "function") {
         window.LanguageGenerator.rerollLexicon();
       }
     });
   }
 
-  // reroll sentences button
-  const rerollSentencesBtn = document.getElementById("reroll-sentences");
-  if (rerollSentencesBtn) {
-    rerollSentencesBtn.addEventListener("click", function () {
+  if (dom.rerollSentencesButton) {
+    dom.rerollSentencesButton.addEventListener("click", function () {
       if (window.LanguageGenerator && typeof window.LanguageGenerator.rerollSentences === "function") {
         window.LanguageGenerator.rerollSentences();
       }
@@ -262,7 +259,7 @@ function attachListeners() {
   }
 }
 
-//core behaviour
+//core behaviour 
 function applyPreset(presetId) {
   if (!window.getPresetById) {
     console.error("getPresetById is not defined on window.");
@@ -325,7 +322,7 @@ function fillControlsFromConfig() {
   }
 }
 
-//summary rendering
+//summary rendering   
 function refreshSummary() {
   const cfg = uiState.config;
   if (!cfg) return;
@@ -338,7 +335,7 @@ function refreshSummary() {
   const preset = window.getPresetById(uiState.activePresetId);
   if (!preset) return;
 
-  // title and tagline
+  //title + tagline
   if (dom.languageName) {
     dom.languageName.textContent = preset.label;
   }
@@ -346,7 +343,7 @@ function refreshSummary() {
     dom.languageTagline.textContent = preset.tagline;
   }
 
-  // phonology block
+  //phonology block
   const wordOrderLabel = findLabel(WORD_ORDER_OPTIONS, cfg.grammar.wordOrder);
   const syllPatternLabel =
     findLabel(SYLLABLE_PATTERN_OPTIONS, cfg.phonology.syllablePreset) ||
@@ -360,7 +357,7 @@ function refreshSummary() {
     ].join("");
   }
 
-  // morphology block
+  //morphology block
   if (dom.metaMorphology) {
     dom.metaMorphology.innerHTML = [
       `<div class="meta-line">nouns: ${cfg.grammar.nounMorph},</div>`,
@@ -369,7 +366,7 @@ function refreshSummary() {
     ].join("");
   }
 
-  // lexicon block
+  //lexicon block
   if (dom.metaLexicon) {
     dom.metaLexicon.innerHTML = [
       `<div class="meta-line">size: ${cfg.lexicon.size},</div>`,
@@ -378,7 +375,7 @@ function refreshSummary() {
     ].join("");
   }
 
-  // writing block
+  //writing block
   const scriptLabel = findLabel(WRITING_SYSTEM_OPTIONS, cfg.writing.scriptType);
   const directionLabel = findLabel(
     SCRIPT_DIRECTION_OPTIONS,
@@ -395,12 +392,12 @@ function refreshSummary() {
     ].join("");
   }
 
-  // alphabet chips handled just below in helper
+  //alphabet chips(hnadled just below in helper)
   renderAlphabetChips(cfg);
 }
 
-// helper make small chips for consonants and vowels (alphabet)
-// did this way cause looks more fancy
+//helper make small chips for consonants + vowels (alphabet)
+//  did this way cause looks more fancy
 function renderAlphabetChips(cfg) {
   if (!dom.alphabetGrid || !cfg || !cfg.phonology) return;
 
@@ -416,7 +413,7 @@ function renderAlphabetChips(cfg) {
   });
 }
 
-//other helpers
+//other helpers   
 function splitPhonemeString(value) {
   return value
     .split(/\s+/)

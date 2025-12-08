@@ -76,8 +76,7 @@
     function buildEntries(list, pos) {
       if (!Array.isArray(list)) return [];
       return list.map(function (gloss) {
-        // generate a completely new random word using phoneme rules
-        const nativeWord = generateWord(state.config.phonology);
+        const nativeWord = generateWord(state.config.phonology, state.config.writing, state.config.grammar, state.config.lexicon);
         return {
           gloss: gloss,
           native: nativeWord,
@@ -85,7 +84,11 @@
           root: nativeWord,
           forms: {
             base: nativeWord
-          }
+          },
+          etymology: state.config.lexicon?.etymology || "layered",
+          properName: shouldBeProperName(pos, state.config.lexicon?.properNames),
+          nounMorphology: state.config.grammar?.nounMorph,
+          verbMorphology: state.config.grammar?.verbMorph
         };
       });
     }
@@ -97,6 +100,14 @@
     state.lexicon.pronouns = buildEntries(state.vocab.pronouns || [], "pronoun");
     state.lexicon.conjunctions = buildEntries(state.vocab.conjunctions || [], "conjunction");
     state.lexicon.descriptors = buildEntries(state.vocab.descriptors || [], "descriptor");
+  }
+
+  function shouldBeProperName(pos, properNameSetting) {
+    if (!properNameSetting || properNameSetting === "none") return false;
+    if (properNameSetting === "light") return Math.random() < 0.1;
+    if (properNameSetting === "rich") return Math.random() < 0.3;
+    if (properNameSetting === "very rich") return Math.random() < 0.5;
+    return false;
   }
 
 
@@ -117,23 +128,19 @@
     const el = document.getElementById("word-category-summary");
     if (!el) return;
 
-    const n = state.lexicon.nouns.length;
-    const v = state.lexicon.verbs.length;
-    const p = state.lexicon.prepositions.length;
-    const a = state.lexicon.articles.length;
-    const pr = state.lexicon.pronouns.length;
-    const c = state.lexicon.conjunctions.length;
-    const d = state.lexicon.descriptors.length;
+    const categories = [
+      { label: "nouns", count: state.lexicon.nouns.length },
+      { label: "verbs", count: state.lexicon.verbs.length },
+      { label: "prepositions", count: state.lexicon.prepositions.length },
+      { label: "articles", count: state.lexicon.articles.length },
+      { label: "pronouns", count: state.lexicon.pronouns.length },
+      { label: "conjunctions", count: state.lexicon.conjunctions.length },
+      { label: "descriptors", count: state.lexicon.descriptors.length }
+    ];
 
-    el.innerHTML = [
-      '<div class="meta-line">nouns: ' + n + "</div>",
-      '<div class="meta-line">verbs: ' + v + "</div>",
-      '<div class="meta-line">prepositions: ' + p + "</div>",
-      '<div class="meta-line">articles: ' + a + "</div>",
-      '<div class="meta-line">pronouns: ' + pr + "</div>",
-      '<div class="meta-line">conjunctions: ' + c + "</div>",
-      '<div class="meta-line">descriptors: ' + d + "</div>"
-    ].join("");
+    el.innerHTML = categories
+      .map(function (cat) { return `<div class="meta-line">${cat.label}: ${cat.count}</div>`; })
+      .join("");
   }
 
   function renderLexiconTable(entries, targetIds) {
@@ -155,7 +162,8 @@
 
       const colNative = document.createElement("div");
       colNative.className = "lex-col lex-native";
-      colNative.textContent = entry.native;
+      const displayNative = entry.properName ? capitalizeWord(entry.native) : entry.native;
+      colNative.textContent = displayNative;
 
       const colGloss = document.createElement("div");
       colGloss.className = "lex-col lex-gloss";
@@ -168,6 +176,11 @@
     });
   }
 
+  function capitalizeWord(word) {
+    if (!word || word.length === 0) return word;
+    return word.charAt(0).toUpperCase() + word.slice(1);
+  }
+
   function renderSentences() {
     const container = document.getElementById("sentence-list");
     if (!container) return;
@@ -175,6 +188,15 @@
     container.innerHTML = "";
     if (!hasLexicon()) return;
 
+    const direction = state.config?.writing?.direction || "ltr";
+    
+    // Add vertical-sentences class for top-to-bottom and bottom-to-top directions
+    if (direction === "ttb" || direction === "btt") {
+      container.classList.add("vertical-sentences");
+    } else {
+      container.classList.remove("vertical-sentences");
+    }
+    
     const sentences = [];
     for (let i = 0; i < 3; i++) {
       sentences.push(makeSentence());
@@ -183,16 +205,24 @@
     sentences.forEach(function (s) {
       const card = document.createElement("article");
       card.className = "sentence-card";
+      
+      // Add vertical-mode class for top-to-bottom and bottom-to-top
+      if (direction === "ttb" || direction === "btt") {
+        card.classList.add("vertical-mode");
+      }
+      
+      // Apply direction-specific styling
+      applyDirectionStyle(card, direction);
 
-      // conlang line (the generated language)
       const line1 = document.createElement("div");
       line1.className = "sent-line sent-conlang";
       line1.textContent = s.conlang;
+      applyDirectionStyle(line1, direction);
 
-      // english translation (green)
       const line2 = document.createElement("div");
       line2.className = "sent-line sent-english";
       line2.textContent = s.english;
+      applyDirectionStyle(line2, direction);
 
       card.appendChild(line1);
       card.appendChild(line2);
@@ -200,17 +230,34 @@
     });
   }
 
-  function makeSentence() {
-    function pickRandom(arr) {
-      if (!arr || arr.length === 0) return null;
-      return arr[Math.floor(Math.random() * arr.length)];
+  function applyDirectionStyle(element, direction) {
+    if (direction === "rtl") {
+      element.style.direction = "rtl";
+      element.style.textAlign = "right";
+    } else if (direction === "ttb") {
+      // Top-to-bottom: stack characters vertically
+      element.style.writingMode = "vertical-rl";
+      element.style.textOrientation = "upright";
+      element.style.display = "flex";
+      element.style.justifyContent = "flex-start";
+    } else if (direction === "btt") {
+      // Bottom-to-top: stack characters vertically in reverse
+      element.style.writingMode = "vertical-lr";
+      element.style.textOrientation = "upright";
+      element.style.display = "flex";
+      element.style.justifyContent = "flex-start";
+    } else {
+      // ltr (default)
+      element.style.direction = "ltr";
+      element.style.textAlign = "left";
     }
+  }
 
-    const order =
-      (state.config &&
-        state.config.grammar &&
-        state.config.grammar.wordOrder) ||
-      "svo";
+  function makeSentence() {
+    const order = (state.config?.grammar?.wordOrder) || "svo";
+    const nounMorph = state.config?.grammar?.nounMorph || "moderate";
+    const verbMorph = state.config?.grammar?.verbMorph || "moderate";
+    const derivation = state.config?.grammar?.derivation || "suffixing";
 
     const subj = pickRandom(state.lexicon.nouns);
     const obj = pickRandom(state.lexicon.nouns);
@@ -218,20 +265,24 @@
     const descAdj = pickRandom(state.lexicon.descriptors);
     const descAdv = pickRandom(state.lexicon.descriptors);
 
-    // build both conlang and gloss data
+    // Apply morphological complexity to words
+    const subjForm = applyNounMorphology(subj.native, nounMorph, derivation);
+    const objForm = applyNounMorphology(obj.native, nounMorph, derivation);
+    const verbForm = applyVerbMorphology(verb.native, verbMorph, derivation);
+
     const slotsConlang = {
-      S_adj: descAdj && descAdj.native,
-      S: subj.native,
-      V: verb.native,
-      V_adv: descAdv && descAdv.native,
-      O: obj.native
+      S_adj: descAdj?.native,
+      S: subjForm,
+      V: verbForm,
+      V_adv: descAdv?.native,
+      O: objForm
     };
 
     const slotsGloss = {
-      S_adj: descAdj && descAdj.gloss,
+      S_adj: descAdj?.gloss,
       S: subj.gloss,
       V: verb.gloss,
-      V_adv: descAdv && descAdv.gloss,
+      V_adv: descAdv?.gloss,
       O: obj.gloss
     };
 
@@ -261,130 +312,136 @@
     });
 
     const conlang = conlangTokens.join(" ");
-    const gloss = glossTokens.join(" ");
-
-    // build english with better rules
     const english = generateEnglishSentence(slotsGloss);
 
-    return { conlang: conlang, gloss: gloss, english: english };
+    return { conlang, english };
+  }
+
+  function applyNounMorphology(base, nounMorph, derivation) {
+    // Apply case endings or other nominal morphology based on complexity level
+    if (nounMorph === "rich") {
+      // Rich morphology: multiple cases, more variety
+      const caseMorphemes = [
+        { marker: "", gloss: "nominative" },
+        { marker: "-em", gloss: "ergative" },
+        { marker: "-el", gloss: "genitive" },
+        { marker: "-ur", gloss: "locative" },
+        { marker: "-is", gloss: "accusative" }
+      ];
+      if (Math.random() < 0.6) {
+        const morph = caseMorphemes[Math.floor(Math.random() * caseMorphemes.length)];
+        return base + morph.marker;
+      }
+      return base;
+    } else if (nounMorph === "moderate") {
+      // Moderate morphology: occasional endings
+      if (Math.random() < 0.35) {
+        const endings = ["-em", "-el", "-ur"];
+        return base + endings[Math.floor(Math.random() * endings.length)];
+      }
+      return base;
+    } else {
+      // Light morphology: minimal endings
+      if (Math.random() < 0.1) {
+        return base + (Math.random() > 0.5 ? "-s" : "-e");
+      }
+      return base;
+    }
+  }
+
+  function applyVerbMorphology(base, verbMorph, derivation) {
+    // Apply tense/aspect/mood markers to verbs based on complexity level
+    if (verbMorph === "rich") {
+      // Rich morphology: multiple TAM categories
+      const affixesByType = {
+        prefixing: ["ta-", "si-", "vel-", ""],
+        suffixing: ["-ta", "-sin", "-vel", "-sa", ""],
+        compounding: ["", "-ta", "-sin"]
+      };
+      
+      const affixes = affixesByType[derivation] || affixesByType.suffixing;
+      if (Math.random() < 0.65) {
+        const affix = affixes[Math.floor(Math.random() * affixes.length)];
+        if (derivation === "prefixing" && affix) {
+          return affix + base;
+        } else {
+          return base + affix;
+        }
+      }
+      return base;
+    } else if (verbMorph === "moderate") {
+      // Moderate morphology: occasional tense markers
+      if (Math.random() < 0.4) {
+        const endings = ["-ta", "-sin", "-sa"];
+        return base + endings[Math.floor(Math.random() * endings.length)];
+      }
+      return base;
+    } else {
+      // Light morphology: minimal verb marking
+      if (Math.random() < 0.15) {
+        return base + (Math.random() > 0.5 ? "-ta" : "-ed");
+      }
+      return base;
+    }
   }
 
   function generateEnglishSentence(gloss) {
-    // simple english template system with smart verb conjugation
     const hasAdj = gloss.S_adj && gloss.S_adj.length > 0;
     const hasAdv = gloss.V_adv && gloss.V_adv.length > 0;
-
-    // conjugate verb for third-person singular present
     const verbForm = conjugateVerb(gloss.V, "present", "3sg");
 
     let engSentence;
     if (hasAdj && hasAdv) {
-      engSentence =
-        "the " +
-        gloss.S_adj +
-        " " +
-        gloss.S +
-        " " +
-        verbForm +
-        " the " +
-        gloss.O +
-        " " +
-        gloss.V_adv +
-        ".";
+      engSentence = `${gloss.S_adj} ${gloss.S} ${verbForm} ${gloss.O} ${gloss.V_adv}.`;
     } else if (hasAdj) {
-      engSentence =
-        "the " +
-        gloss.S_adj +
-        " " +
-        gloss.S +
-        " " +
-        verbForm +
-        " the " +
-        gloss.O +
-        ".";
+      engSentence = `${gloss.S_adj} ${gloss.S} ${verbForm} ${gloss.O}.`;
     } else if (hasAdv) {
-      engSentence =
-        "the " +
-        gloss.S +
-        " " +
-        verbForm +
-        " the " +
-        gloss.O +
-        " " +
-        gloss.V_adv +
-        ".";
+      engSentence = `${gloss.S} ${verbForm} ${gloss.O} ${gloss.V_adv}.`;
     } else {
-      engSentence =
-        "the " +
-        gloss.S +
-        " " +
-        verbForm +
-        " the " +
-        gloss.O +
-        ".";
+      engSentence = `${gloss.S} ${verbForm} ${gloss.O}.`;
     }
 
     return engSentence;
   }
 
   function conjugateVerb(verbGloss, tense, person) {
-    // simple english verb conjugation
-    // person: "3sg" (third singular), "other" (everything else)
-    // tense: "present", "past", "progressive"
-    
     if (tense === "past") {
-      // simple past
-      if (verbGloss.endsWith("e")) {
-        return verbGloss + "d";
-      } else if (verbGloss.endsWith("y")) {
-        return verbGloss.slice(0, -1) + "ied";
-      } else {
-        return verbGloss + "ed";
-      }
+      if (verbGloss.endsWith("e")) return verbGloss + "d";
+      if (verbGloss.endsWith("y")) return verbGloss.slice(0, -1) + "ied";
+      return verbGloss + "ed";
     } else if (tense === "progressive") {
-      // ing form
-      if (verbGloss.endsWith("e")) {
-        return verbGloss.slice(0, -1) + "ing";
+      if (verbGloss.endsWith("e")) return verbGloss.slice(0, -1) + "ing";
+      return verbGloss + "ing";
+    } else if (person === "3sg") {
+      if (verbGloss.endsWith("s") || verbGloss.endsWith("x") || verbGloss.endsWith("z")) {
+        return verbGloss + "es";
+      } else if (verbGloss.endsWith("y")) {
+        return verbGloss.slice(0, -1) + "ies";
       } else {
-        return verbGloss + "ing";
-      }
-    } else {
-      // present tense
-      if (person === "3sg") {
-        // add s for third person singular
-        if (verbGloss.endsWith("s") || verbGloss.endsWith("x") || verbGloss.endsWith("z")) {
-          return verbGloss + "es";
-        } else if (verbGloss.endsWith("y")) {
-          return verbGloss.slice(0, -1) + "ies";
-        } else {
-          return verbGloss + "s";
-        }
-      } else {
-        // other persons use base form
-        return verbGloss;
+        return verbGloss + "s";
       }
     }
+    return verbGloss;
   }
 
   function wordOrderToSequence(order) {
-    const o = (order || "").toLowerCase();
-    if (o === "sov") return ["S", "O", "V"];
-    if (o === "vso") return ["V", "S", "O"];
-    if (o === "osv") return ["O", "S", "V"];
-    if (o === "ovs") return ["O", "V", "S"];
-    return ["S", "V", "O"];
+    const orders = {
+      "sov": ["S", "O", "V"],
+      "vso": ["V", "S", "O"],
+      "osv": ["O", "S", "V"],
+      "ovs": ["O", "V", "S"]
+    };
+    return orders[(order || "").toLowerCase()] || ["S", "V", "O"];
   }
 
-  function generateWord(phonology) {
-    if (!phonology || !phonology.consonants || !phonology.vowels) {
+  function generateWord(phonology, writing, grammar, lexicon) {
+    if (!phonology?.consonants || !phonology?.vowels) {
       return "err";
     }
 
     const maxSyl = phonology.maxSyllables || 3;
-    const syllableCount = Math.floor(Math.random() * (maxSyl - 1)) + 1; // 1 to maxSyl
+    const syllableCount = Math.floor(Math.random() * (maxSyl - 1)) + 1;
     const pattern = phonology.syllablePreset || "cvc";
-    
-    // split multi-part patterns like "cv-cvc"
     const patternParts = pattern.includes("-") ? pattern.split("-") : [pattern];
     const syllables = [];
 
@@ -396,8 +453,55 @@
       }
     }
 
-    const result = syllables.join("");
-    return result.length > 0 ? result : "word";
+    let result = syllables.join("");
+    result = result.length > 0 ? result : "word";
+
+    // Apply derivational morphology based on grammar settings
+    const morphChance = getMorphChance(grammar?.nounMorph, grammar?.verbMorph);
+    if (Math.random() < morphChance) {
+      if (grammar?.derivation === "prefixing") {
+        const prefix = generateSyllable("cv", phonology);
+        result = prefix + result;
+      } else if (grammar?.derivation === "suffixing") {
+        const suffix = generateSyllable("cv", phonology);
+        result = result + suffix;
+      } else if (grammar?.derivation === "infixing") {
+        const splitPoint = Math.floor(result.length / 2);
+        const infix = generateSyllable("cv", phonology);
+        result = result.slice(0, splitPoint) + infix + result.slice(splitPoint);
+      }
+    }
+
+    // Apply etymology-based sound changes
+    if (lexicon?.etymology === "layered" && Math.random() < 0.15) {
+      result = applyRandomSoundChange(result, phonology);
+    }
+
+    // RTL writing direction handled at display level, not generation
+    return result;
+  }
+
+  function getMorphChance(nounMorph, verbMorph) {
+    const nounChance = nounMorph === "rich" ? 0.35 : nounMorph === "moderate" ? 0.15 : 0.05;
+    const verbChance = verbMorph === "rich" ? 0.35 : verbMorph === "moderate" ? 0.15 : 0.05;
+    return Math.max(nounChance, verbChance);
+  }
+
+  function applyRandomSoundChange(word, phonology) {
+    if (word.length < 2) return word;
+    
+    const changes = [
+      function (w) { return w.replace(/p/g, "f").replace(/b/g, "v").replace(/t/g, "s").replace(/d/g, "z"); },
+      function (w) { return w.replace(/k/g, "x").replace(/g/g, "ɣ"); },
+      function (w) { return w.replace(/s/g, "ʃ").replace(/z/g, "ʒ"); }
+    ];
+    
+    const randomChange = changes[Math.floor(Math.random() * changes.length)];
+    return randomChange(word);
+  }
+
+  function reverseString(str) {
+    return str;
   }
 
   function generateSyllable(pattern, phonology) {
@@ -415,13 +519,11 @@
         const vowel = pickRandom(phonology.vowels);
         if (vowel) syllable.push(vowel);
       } else if (char === "X") {
-        // optional consonant (50% chance)
         if (Math.random() > 0.5) {
           const cons = pickRandom(phonology.consonants);
           if (cons) syllable.push(cons);
         }
       } else if (char === "L") {
-        // liquid position prefer l/r
         const liquids = phonology.consonants.filter(function (c) {
           return c === "l" || c === "r" || c === "ɾ" || c === "ɹ";
         });
@@ -444,119 +546,79 @@
 
   function renderAlphabetMap() {
     const container = document.getElementById("alphabet-grid");
-    if (!container || !state.config || !state.config.phonology) return;
+    if (!container || !state.config?.phonology) return;
 
     container.innerHTML = "";
 
-    const consonants = state.config.phonology.consonants || [];
-    const vowels = state.config.phonology.vowels || [];
-    const allPhonemes = consonants.concat(vowels);
+    const englishVowels = ["a", "e", "i", "o", "u", "aa", "ee", "ii", "oo", "uu", "ae", "oe", "ue"];
+    const englishConsonants = ["b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "y", "z", "sh", "th", "ch"];
 
-    // english counterpart mapping
-    const englishMap = {
-      "p": "p", "b": "b", "t": "t", "d": "d", "k": "k", "g": "g",
-      "f": "f", "v": "v", "s": "s", "z": "z", "ʃ": "sh", "ʒ": "zh",
-      "h": "h", "l": "l", "r": "r", "m": "m", "n": "n", "ŋ": "ng",
-      "j": "y", "w": "w", "x": "x", "θ": "th", "ð": "dh",
-      "ɣ": "gh", "χ": "kh", "ʁ": "rh", "ħ": "-", "ʕ": "-",
-      "ɬ": "lh", "ɾ": "r", "ɹ": "r", "ʀ": "r", "β": "v",
-      "ɸ": "f", "pf": "pf", "ts": "ts", "ch": "ch", "sch": "sch",
-      "shch": "shch", "zh": "zh", "sh": "sh",
-      "a": "a", "e": "e", "i": "i", "o": "o", "u": "u",
-      "y": "y", "æ": "ae", "ø": "o", "ə": "-", "ɘ": "-",
-      "ɯ": "u", "ɨ": "i", "ʉ": "u", "ɪ": "i", "ʊ": "u",
-      "ɑ": "ah", "ɒ": "o", "ɔ": "aw",
-      "aa": "aa", "ee": "ee", "ii": "ii", "oo": "oo", "uu": "uu",
-      "ai": "ai", "au": "au", "oi": "oi", "ae": "ae", "oe": "oe",
-      "ue": "ue", "ya": "ya", "ye": "ye", "yo": "yo", "yu": "yu",
-      "iː": "ee", "eː": "eh", "aː": "ah", "oː": "oh", "uː": "oo",
-      "yː": "yy", "ah": "ah", "uh": "uh", "q": "q", "c": "c"
-    };
+    const conlangVowels = state.config.phonology.vowels || [];
+    const conlangConsonants = state.config.phonology.consonants || [];
 
-    allPhonemes.forEach(function (phoneme) {
+    const vowelMapping = buildMapping(conlangVowels, englishVowels);
+    const consonantMapping = buildMapping(conlangConsonants, englishConsonants);
+
+    const vowelHeader = document.createElement("div");
+    vowelHeader.className = "alphabet-section-header";
+    vowelHeader.textContent = "Vowels";
+    container.appendChild(vowelHeader);
+
+    englishVowels.forEach(function (englishLetter) {
       const row = document.createElement("div");
       row.className = "alphabet-row";
 
-      const phonemeEl = document.createElement("div");
-      phonemeEl.className = "alphabet-phoneme";
-      phonemeEl.textContent = phoneme;
+      const englishEl = document.createElement("div");
+      englishEl.className = "alphabet-english";
+      englishEl.textContent = englishLetter;
+
+      const conlangEl = document.createElement("div");
+      conlangEl.className = "alphabet-conlang";
+      conlangEl.textContent = vowelMapping[englishLetter] || "-";
+
+      row.appendChild(englishEl);
+      row.appendChild(conlangEl);
+      container.appendChild(row);
+    });
+
+    const consonantHeader = document.createElement("div");
+    consonantHeader.className = "alphabet-section-header";
+    consonantHeader.textContent = "Consonants";
+    container.appendChild(consonantHeader);
+
+    englishConsonants.forEach(function (englishLetter) {
+      const row = document.createElement("div");
+      row.className = "alphabet-row";
 
       const englishEl = document.createElement("div");
       englishEl.className = "alphabet-english";
-      const englishCounterpart = englishMap[phoneme] || "-";
-      englishEl.textContent = englishCounterpart;
+      englishEl.textContent = englishLetter;
 
-      row.appendChild(phonemeEl);
+      const conlangEl = document.createElement("div");
+      conlangEl.className = "alphabet-conlang";
+      conlangEl.textContent = consonantMapping[englishLetter] || "-";
+
       row.appendChild(englishEl);
+      row.appendChild(conlangEl);
       container.appendChild(row);
     });
   }
 
+  function buildMapping(conlangPhonemes, englishSlots) {
+    const mapping = {};
+    conlangPhonemes.forEach(function (phoneme, idx) {
+      if (idx < englishSlots.length) {
+        mapping[englishSlots[idx]] = phoneme;
+      }
+    });
+    return mapping;
+  }
+
   window.LanguageGenerator = {
-    init: init,
-    receiveConfig: receiveConfig,
-    rerollLexicon: rerollLexicon,
-    rerollSentences: rerollSentences
+    init,
+    receiveConfig,
+    rerollLexicon,
+    rerollSentences
   };
 })();
-
-/*
-
-improvements made:
-
-1. buildLexicon() now creates full entry objects with:
-   - gloss (english meaning)
-   - native (generated conlang word)
-   - pos (part of speech tag)
-   - root and forms for future morphology expansion
-
-2. generateWord() uses syllablePreset directly and creates varied word lengths
-   generateSyllable() supports:
-   - C = consonant
-   - V = vowel  
-   - X = optional consonant (50% chance)
-   - L = liquid (prefers l/r if available)
-
-3. makeSentence() builds two parallel token arrays:
-   - conlangTokens = generated words
-   - glossTokens = english glosses
-   both follow the same word order, ensuring consistency
-
-4. generateEnglishSentence() applies basic rules:
-   - handles optional adjectives and adverbs
-   - calls conjugateVerb() for smart verb forms
-
-5. conjugateVerb() handles english rules:
-   - 3rd person singular present adds -s/-es/-ies
-   - past tense adds -ed or -d
-   - progressive forms add -ing
-   this keeps english translation cleaner
-
-6. wordOrderToSequence() unchanged but all functions now use it consistently
-
-ready for future expansions:
-- morphology rules can use the entry.forms and entry.pos fields
-- new templates can be added to sentence generation
-- phoneme class constraints can filter pickRandom() calls
-
-*/
-
-/* archived experimental code */
-/* collapsible lexicon feature not currently implemented */
-/*
-  // example placeholder for future collapsible rendering:
-  // function renderLexiconCollapsible(entries, cardId) {
-  //   const card = document.getElementById(cardId);
-  //   if (!card) return;
-  //   const header = card.querySelector('.collapsible-header');
-  //   if (header) {
-  //     header.addEventListener('click', function() {
-  //       const content = card.querySelector('.lexicon-collapsible');
-  //       if (content) {
-  //         content.style.display = content.style.display === 'none' ? 'block' : 'none';
-  //       }
-  //     });
-  //   }
-  // }
-*/
 
