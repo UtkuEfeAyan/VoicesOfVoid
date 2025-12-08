@@ -539,7 +539,6 @@ body {
   min-width: 100%;
 }
 
-/* Vertical writing mode (TTB/BTT) - 3 columns, 1 row */
 .sentence-list.vertical-sentences {
   grid-template-columns: repeat(3, minmax(150px, 1fr));
   gap: 12px;
@@ -556,7 +555,6 @@ body {
   gap: 8px;
 }
 
-/* Vertical writing mode support (TTB/BTT) - conlang and english side by side */
 .sentence-card.vertical-mode {
   display: flex;
   flex-direction: row;
