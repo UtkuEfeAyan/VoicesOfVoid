@@ -1,9 +1,9 @@
-// presets main structure was put into chatgpt then was given some prompts
-// to do some of the tedious work of filling in the details
-// however it wasnt able to do what i wanted for specific vowels and consonants
-// so i went back and changed and refined the vowels and consonants manually
-// for each of the different languages to fit what i wanted for the feel of the languages
-// and this is the chat you can look at it https://chatgpt.com/share/692bc300-3e94-800a-860e-38db08fd6e88
+//presets mai n structure was put into chat gtp then was given some prompts 
+// to do some of the tedious work of filling in the details 
+//however it wasnt able to do wha ti wanted for specific wovels and consonants 
+// so i went back and changed/refined the  wovels and consonants manually 
+// for each of the different languages to fit what i wanted for teh feel of the languages
+// and thsi is the chat you can look at it https://chatgpt.com/share/692bc300-3e94-800a-860e-38db08fd6e88
 
 const LANGUAGE_PRESETS = {
   elven: {

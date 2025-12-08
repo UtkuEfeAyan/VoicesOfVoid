@@ -11,7 +11,7 @@
     <header class="app-header">
       <div class="app-title-block">
         <h1 class="app-title">VOICES OF VOID</h1>
-        <p class="app-subtitle">proto-language generator</p>
+        <p class="app-subtitle">proto-language workbench</p>
       </div>
     </header>
 
@@ -140,61 +140,31 @@
           </article>
 
           <section class="info-card">
-            <div class="card-header">
+            <div class="card-header card-header-with-button">
               <div>
                 <div class="card-kicker">mini dictionary</div>
                 <h3 class="card-title">word categories</h3>
               </div>
+              <button id="reroll-lexicon" class="pill-button pill-small pill-secondary" type="button">reroll</button>
             </div>
             <div class="card-body">
               <div id="word-category-summary" class="meta-block"></div>
 
-              <div class="lexicon-grid">
+              <div class="lexicon-double">
                 <article class="lexicon-card">
                   <div class="card-header">
                     <div>
                       <div class="card-kicker">mini dictionary</div>
-                      <h3 class="card-title">conjunctions</h3>
+                      <h3 class="card-title">nouns</h3>
                     </div>
                   </div>
                   <div class="lexicon-table">
                     <div class="lex-row lex-header">
                       <div class="lex-col">word</div>
                       <div class="lex-col">meaning</div>
+                      <div class="lex-col">pos</div>
                     </div>
-                    <div id="lexicon-conjunctions-body"></div>
-                  </div>
-                </article>
-
-                <article class="lexicon-card">
-                  <div class="card-header">
-                    <div>
-                      <div class="card-kicker">mini dictionary</div>
-                      <h3 class="card-title">prepositions</h3>
-                    </div>
-                  </div>
-                  <div class="lexicon-table">
-                    <div class="lex-row lex-header">
-                      <div class="lex-col">word</div>
-                      <div class="lex-col">meaning</div>
-                    </div>
-                    <div id="lexicon-prepositions-body"></div>
-                  </div>
-                </article>
-
-                <article class="lexicon-card">
-                  <div class="card-header">
-                    <div>
-                      <div class="card-kicker">mini dictionary</div>
-                      <h3 class="card-title">pronouns</h3>
-                    </div>
-                  </div>
-                  <div class="lexicon-table">
-                    <div class="lex-row lex-header">
-                      <div class="lex-col">word</div>
-                      <div class="lex-col">meaning</div>
-                    </div>
-                    <div id="lexicon-pronouns-body" class="lex-body"></div>
+                    <div id="lexicon-nouns-body"></div>
                   </div>
                 </article>
 
@@ -209,6 +179,7 @@
                     <div class="lex-row lex-header">
                       <div class="lex-col">word</div>
                       <div class="lex-col">meaning</div>
+                      <div class="lex-col">pos</div>
                     </div>
                     <div id="lexicon-verbs-body"></div>
                   </div>
@@ -218,13 +189,14 @@
                   <div class="card-header">
                     <div>
                       <div class="card-kicker">mini dictionary</div>
-                      <h3 class="card-title">descriptors</h3>
+                      <h3 class="card-title">descriptors (adj/adv)</h3>
                     </div>
                   </div>
                   <div class="lexicon-table">
                     <div class="lex-row lex-header">
                       <div class="lex-col">word</div>
                       <div class="lex-col">meaning</div>
+                      <div class="lex-col">pos</div>
                     </div>
                     <div id="lexicon-descriptors-body"></div>
                   </div>
@@ -234,31 +206,16 @@
                   <div class="card-header">
                     <div>
                       <div class="card-kicker">mini dictionary</div>
-                      <h3 class="card-title">nouns</h3>
+                      <h3 class="card-title">other words</h3>
                     </div>
                   </div>
                   <div class="lexicon-table">
                     <div class="lex-row lex-header">
                       <div class="lex-col">word</div>
                       <div class="lex-col">meaning</div>
+                      <div class="lex-col">pos</div>
                     </div>
-                    <div id="lexicon-nouns-body"></div>
-                  </div>
-                </article>
-
-                <article class="lexicon-card">
-                  <div class="card-header">
-                    <div>
-                      <div class="card-kicker">mini dictionary</div>
-                      <h3 class="card-title">articles</h3>
-                    </div>
-                  </div>
-                  <div class="lexicon-table">
-                    <div class="lex-row lex-header">
-                      <div class="lex-col">word</div>
-                      <div class="lex-col">meaning</div>
-                    </div>
-                    <div id="lexicon-articles-body"></div>
+                    <div id="lexicon-other-body"></div>
                   </div>
                 </article>
               </div>

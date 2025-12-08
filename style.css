@@ -381,49 +381,32 @@ body {
 .alphabet-grid {
   padding: 10px 12px 12px;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(28px, 1fr));
   gap: 6px;
 }
 
-.alphabet-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  padding: 6px;
-  border-radius: 8px;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(79, 70, 229, 0.4);
-}
-
-.alphabet-phoneme {
-  font-size: 14px;
-  font-weight: 600;
+.alphabet-chip {
+  font-size: 12px;
   text-align: center;
+  padding: 4px 0;
+  border-radius: 10px;
+  background: var(--bg-chip);
+  border: 1px solid rgba(79, 70, 229, 0.45);
   color: #e5e7ff;
-  padding: 4px 0;
-}
-
-.alphabet-english {
-  font-size: 11px;
-  text-align: center;
-  color: var(--text-mute);
-  padding: 4px 0;
+  box-shadow: 0 5px 16px rgba(0, 0, 0, 0.85);
 }
 
 /* triple lexicon tables */
 
-.lexicon-grid {
+.lexicon-double {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  grid-auto-rows: min-content;
-  gap: 10px;
-  align-content: start;
+  gap: 14px;
 }
 
 .lexicon-card {
   display: flex;
   flex-direction: column;
-  max-height: 600px;
 }
 
 .lexicon-table {
@@ -431,19 +414,15 @@ body {
   border-radius: 14px;
   background: radial-gradient(circle at 0 0, rgba(129, 140, 248, 0.13), rgba(12, 17, 46, 0.98));
   border: 1px solid rgba(51, 65, 160, 0.95);
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  max-height: 500px;
+  overflow: hidden;
 }
 
 /* lexicon rows */
 
 .lex-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 2fr 2fr 1fr;
   font-size: 12px;
-  flex-shrink: 0;
 }
 
 .lex-header {
@@ -474,9 +453,6 @@ body {
   padding: 6px 9px;
   display: flex;
   align-items: center;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  word-break: break-word;
 }
 
 .lex-native {
@@ -552,13 +528,21 @@ body {
   background: radial-gradient(circle at 0 0, rgba(56, 189, 248, 0.12), rgba(8, 11, 32, 0.96));
   border: 1px solid rgba(37, 99, 235, 0.8);
   box-shadow: var(--shadow-subtle);
+  overflow-x: auto;
 }
 
 .sentence-list {
   margin-top: 8px;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 10px;
+  min-width: 100%;
+}
+
+/* Vertical writing mode (TTB/BTT) - 3 columns, 1 row */
+.sentence-list.vertical-sentences {
+  grid-template-columns: repeat(3, minmax(150px, 1fr));
+  gap: 12px;
 }
 
 .sentence-card {
@@ -567,6 +551,20 @@ body {
   border: 1px solid rgba(55, 65, 194, 0.9);
   padding: 8px 11px 9px;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Vertical writing mode support (TTB/BTT) - conlang and english side by side */
+.sentence-card.vertical-mode {
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  padding: 12px 8px;
+  min-height: 100px;
+  align-items: center;
+  justify-content: center;
 }
 
 .sent-line {
@@ -589,27 +587,35 @@ body {
   color: #bbf7d0;
 }
 
+/* Direction-specific styling */
+.sent-line[style*="vertical-rl"],
+.sent-line[style*="vertical-lr"] {
+  display: inline-block;
+  margin: 0 4px;
+  padding: 4px 2px;
+  min-height: 80px;
+  width: auto;
+  max-width: 30px;
+}
+
 /* scrollbars */
 
 body::-webkit-scrollbar,
 .left-panel::-webkit-scrollbar,
-.right-panel::-webkit-scrollbar,
-.lexicon-table::-webkit-scrollbar {
+.right-panel::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 body::-webkit-scrollbar-track,
 .left-panel::-webkit-scrollbar-track,
-.right-panel::-webkit-scrollbar-track,
-.lexicon-table::-webkit-scrollbar-track {
+.right-panel::-webkit-scrollbar-track {
   background: transparent;
 }
 
 body::-webkit-scrollbar-thumb,
 .left-panel::-webkit-scrollbar-thumb,
-.right-panel::-webkit-scrollbar-thumb,
-.lexicon-table::-webkit-scrollbar-thumb {
+.right-panel::-webkit-scrollbar-thumb {
   background: rgba(79, 70, 229, 0.9);
   border-radius: 999px;
 }
@@ -661,24 +667,3 @@ body::-webkit-scrollbar-thumb,
     font-size: 18px;
   }
 }
-
-/* archived experimental code */
-/* collapsible lexicon feature not currently implemented */
-/*
-.collapsible-header {
-  cursor: pointer;
-  user-select: none;
-}
-
-.collapsible-header:hover {
-  background: rgba(60, 70, 160, 0.6);
-}
-
-.collapse-icon {
-  display: none;
-}
-
-.lexicon-collapsible {
-  display: block;
-}
-*/
