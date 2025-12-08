@@ -321,3 +321,7 @@ function getAllPresetOptions() {
 window.LANGUAGE_PRESETS = LANGUAGE_PRESETS;
 window.getPresetById = getPresetById;
 window.getAllPresetOptions = getAllPresetOptions;
+
+window.LANGUAGE_PRESETS = LANGUAGE_PRESETS;
+window.getPresetById = getPresetById;
+window.getAllPresetOptions = getAllPresetOptions;
