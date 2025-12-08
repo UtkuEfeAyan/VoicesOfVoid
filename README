@@ -1,16 +1,41 @@
 
-there were too many words to do by hand in the vocabulary.json file so here is the link for the chat 
-I, at the end of the chat, decided to lower the amount of words since the words were too complex 
- The generation looked bad, and didn't make sense in translation 
- https://chatgpt.com/share/692bce30-703c-800a-b1aa-09e0a5f1b319
+The directions controls of language creation is currently not perfect.
 
- i have also used this chat to ideate on some stuff before statieng everythign and did use some structure form thsi 
-https://chatgpt.com/share/692c0ead-ef90-800a-bb6c-3e28d2dcb23c
 
-this is the chat i used for getting teh ideas for my style.css and index.html stuff working also di help with my ui.js ideation as weel
-https://chatgpt.com/share/692e5fcc-0468-800a-8c88-8b2b82ce40e6
+ARTIST STATEMENT
+I would say I decided to do this project because of my passion for worldbuilding. I really enjoy exploring different, unique worlds (especially by reading or playing as I 
+find those to be more immersive in their world building, some of my favorites are Warhammer(both 30k(horus heresy) and 40k), Bloodborne(as well as DS and ER), SCP containment breach, 
+Dune, Witcher, D&D, among others.I love spending hours digging through lore, learning how these worlds fit together, like one of my guilty pleasures is watching hours of lore videos on 
+YouTube while I have free time or doing some easy work, and I also played and hosted some D&D. I enjoy my own amateur world building as well so I wanted cto reate a tool that I or others
+who want to enrich their worlds through languages or just want to explore languages in wolrd buiding more can used to ideate, experiment, and quickly sketch out how a fictional language 
+might look like how a fictional or fantasy creature might sound etc, without needing to fully master linguistics or spend months building a single conlang for a singel idea.
+This tool i more focuded on rapid ideation rather than trying to design one perfect language, this project focuses on building a flexible language-generation workbench with a dark, sci-fi 
+theme(casu i like that kind of theme) where you can tweak grammar settings, phonology, and writing system options, then instantly see sample words, sentences, and mini dictionaries. 
+It’s part a toy, part a design tool, and part an excuse for me to dive deeper into the logistics of linguistics(languages) and world building.
 
-some other resources and research sources
+Postmortem    (did use gramerly for grammar since i have a it installed in the computer)
+I think i bit off more than I could chew with some stuff, especially my original idea of having both a custom glyph generator that would generate glyphs for each of the  generated languages
+as i started working on it and doing more research on word generation, sentence generation, conlanging(creating languages) etc. I realized how complicated things were
+so I decided to only focus on teh language part of the thing rather than the glyph generation so I ditched graphic glyph generation to just start using different pre-made letters and more
+exotic alphabet characters integration rather than generation form zero. condensing my efforts helped a lot, however, the ui, style.css and HTML parts took a very long time, especially the html
+since I'm not really good at html even though I have like ideated by using ChatGPT, for, templates/templates it couldn't do what I wanted fully  so I needed to tweak and fix stuff  a lot 
+especially for moving parts like the sentence generator and  the dictionaries that hold my generated sentences, which I did, made some cool drop-down selection menus and a good interface
+and it became one of the parts I'm very proud of in the project, even though they are not perfect, they are very good(at least I think so). 
+
+Then we have the main problem generation logicwhich I thought would be easy since i had so many rules right it wasn't well at least, it wasn't as good as I hoped it would be. 
+It's a thousand times better than where it started, especially for generating sentences and words and like follows all teh rules(i think). However, it still can't really generate an authentic feeling 
+words I mean it does generate words, but they don't look like teh ones we see in English, where they are very clearly structured, but that semi-random generation for you I spent a lot of time 
+Looking for language generation logic and algorithms online; however, everything I found was not something I like, where they were using outer APIs or logic so complex that i had no idea 
+What it was doing even  after watching teh videos or reading about them, Markov chains, however, the easy way people used them was not really compatible with my other rule-based logic
+I wanted to use as withy were just using outside libraries or APIs(markovify) to generate text from nothing, but I wanted to control how the text would be generated, but
+I couldn't get them to work as they were a completely new topic for me, and were way more complex than i thought, and i probably shouldn't have wasted time trying to learn how to make them work 
+the way i wanted (work together with my rule-based logic), which I realized was futile so I realized I needed ot be to be content with this level of generation It's not bad persay, but not the
+Perfect one I wanted, still it works and looks relatively ok so it's good but as I said, generation was the hardest part to get right.
+
+
+
+
+some resources and research sources
 https://glyphy.io/font-generator/weird-text
 https://www.vulgarlang.com/
 https://www.youtube.com/watch?v=5OGDlp2XIdg
@@ -24,23 +49,15 @@ looked at a few videos from the below playlists cant remember them all but I thi
 https://www.youtube.com/watch?v=1L2YiWdaUDM&list=PL4-IK0AVhVjOJs_UjdQeyEZ_cmEV3uJvx
 https://www.youtube.com/watch?v=i3AkTO9HLXo&list=PLM8wYQRetTxBkdvBtz-gw8b9lcVkdXQKV
 
-the directions controls of language creation is currently not perfect.
 
-Postmortem(did use gramerly for grammer sice i have a subscription
-I think i bit off more than I could chew with some stuff, especially my original idea of having both a custom glyp generator that would generate glyphs for each of the  genrated languages
-as i started working on it and doing more research on word generation, sentence generation, conlanging(creating languages) etc. I realized how complicated things were
-so I decided to only focus on teh language part of the thing rather than the glyph generation so i ditched graphic glyph generation to just start using different pre-made letters and more
-exotic alphabet characters integration rather than generation form zero. condensing my efforts helped alot however, the ui, style.css and HTML parts took a very long time, especially the html
-since I'm not really good at html even though i have like ideated by using ChatGPT, for, templates/templates it couldn't do waht I wanted fully  so I needed to tweak and fix stuff  a lot 
-espacially for moving parts like sentence genrator and  the dictionaries that hold my generated sentences, which I did, made some cool drop-down selection menus and a good interfeca
-and it became one of the parts I'm very proud of in the project even though they are not perfect, they are very good(at least ithink so). 
+there were too many words to do by hand in the vocabulary.json file so here is the link for the chat 
+I, at the end of the chat, decided to lower the amount of words since the words were too complex 
+ The generation looked bad, and didn't make sense in translation 
+ https://chatgpt.com/share/692bce30-703c-800a-b1aa-09e0a5f1b319
 
-Then we have the main problem generation logicwhich I thought would be easy since i had so many rules right it wasn't well at leanst it wasnt a sgood as i hoped it would be, 
-It's a thousand times better than where it started, especially for generating sentences and words and like follows all teh rules(i think) however, it still cant really generate authantic feeling 
-words I mean it does generate words, but they dont look liek teh ones we see in English, where they are very clearly structured but that semi-random genration for you i spent a lot of time 
-Looking for language generation logic and algorithms online; however, everything i found was not something I like, where they were using outer apis or logic so complex taht i had no idea 
-What it was doing even  after watching teh videos or reding about them, Markov chains, however, the easy way people used them was not really compatible with my other rule based logic
-I wanted to use as withy were just using outside libraries or APIs(markovify) to generate text from nothing, but I wanted to control how the text would be generated but
-I couldn't get them to work as they were a completely new topic for me and was way more complex than i thought and i probably shouldn't have wasted time trying to learn how to make them work 
-the way i wanted (work together with my rule based logic) which I realized was futile so I realized i needed ot be to be content with this level of generation It's not bad persay but not the
-Perfect one I wanted, still it works and looks relatively ok so it's good but like I said generation was the hardest part to get right.
+ i have also used this chat to ideate on some stuff before statieng everythign and did use some structure form thsi 
+https://chatgpt.com/share/692c0ead-ef90-800a-bb6c-3e28d2dcb23c
+
+this is the chat i used for getting teh ideas for my style.css and index.html stuff working also di help with my ui.js ideation as weel
+https://chatgpt.com/share/692e5fcc-0468-800a-8c88-8b2b82ce40e6
+
