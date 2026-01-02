@@ -25,38 +25,59 @@
         <div class="control-section">
           <h2 class="section-title">grammar</h2>
 
-          <label class="field-label" for="word-order-select">word order</label>
+          <div class="field-row">
+            <label class="field-label" for="word-order-select">word order</label>
+            <button class="info-button" data-info="word-order" aria-label="Word order info" type="button">ⓘ</button>
+          </div>
           <select id="word-order-select" class="select-input"></select>
 
-          <label class="field-label" for="syllable-pattern-select">syllable pattern</label>
+          <div class="field-row">
+            <label class="field-label" for="syllable-pattern-select">syllable pattern</label>
+            <button class="info-button" data-info="syllable-pattern" aria-label="Syllable pattern info" type="button">ⓘ</button>
+          </div>
           <select id="syllable-pattern-select" class="select-input"></select>
 
-          <label class="field-label" for="max-syllables-select">max syllables per word</label>
+          <div class="field-row">
+            <label class="field-label" for="max-syllables-select">max syllables per word</label>
+            <button class="info-button" data-info="max-syllables" aria-label="Max syllables info" type="button">ⓘ</button>
+          </div>
           <select id="max-syllables-select" class="select-input"></select>
         </div>
 
         <div class="control-section">
           <h2 class="section-title">phonology</h2>
 
-          <label class="field-label" for="consonants-input">consonants (space-separated)</label>
-          <textarea id="consonants-input" class="text-input" rows="3"></textarea>
+          <div class="field-row">
+            <label class="field-label" for="consonants-input">consonants</label>
+            <button class="info-button" data-info="consonants" aria-label="Consonant info" type="button">ⓘ</button>
+          </div>
+          <input id="consonants-input" class="text-input" type="text" placeholder="b d f g h k l m n p r s t v w z">
 
-          <label class="field-label" for="vowels-input">vowels (space-separated)</label>
-          <textarea id="vowels-input" class="text-input" rows="3"></textarea>
+          <div class="field-row">
+            <label class="field-label" for="vowels-input">vowels</label>
+            <button class="info-button" data-info="vowels" aria-label="Vowel info" type="button">ⓘ</button>
+          </div>
+          <input id="vowels-input" class="text-input" type="text" placeholder="a e i o u">
         </div>
 
         <div class="control-section">
           <h2 class="section-title">writing system</h2>
 
-          <label class="field-label" for="writing-system-select">system type</label>
+          <div class="field-row">
+            <label class="field-label" for="writing-system-select">system type</label>
+            <button class="info-button" data-info="writing-system" aria-label="Writing system info" type="button">ⓘ</button>
+          </div>
           <select id="writing-system-select" class="select-input"></select>
 
-          <label class="field-label" for="script-direction-select">direction</label>
+          <div class="field-row">
+            <label class="field-label" for="script-direction-select">direction</label>
+            <button class="info-button" data-info="script-direction" aria-label="Script direction info" type="button">ⓘ</button>
+          </div>
           <select id="script-direction-select" class="select-input"></select>
         </div>
 
         <div class="control-actions">
-          <button id="reset-to-preset" class="pill-button pill-secondary" type="button">reset to preset</button>
+          <button id="reset-to-preset" class="pill-button pill-primary" type="button">reset to preset</button>
           <button id="send-to-generator" class="pill-button pill-primary" type="button">send to generator</button>
         </div>
       </section>
@@ -122,7 +143,9 @@
             <div class="card-header">
               <div>
                 <div class="card-kicker">alphabet</div>
-                <h3 class="card-title">phoneme inventory</h3>
+                <h3 class="card-title">phoneme inventory
+                  <button class="info-button" data-info="alphabet-input" aria-label="Alphabet info" type="button">ⓘ</button>
+                </h3>
               </div>
             </div>
             <div class="alphabet-grid" id="alphabet-grid"></div>
@@ -137,6 +160,27 @@
               <button id="reroll-sentences" class="pill-button pill-small pill-secondary" type="button">reroll</button>
             </div>
             <div class="sentence-list" id="sentence-list"></div>
+
+            <div class="custom-sentence-input">
+              <label class="field-label" for="custom-sentence-input">translate your own sentence
+                <button class="info-button" data-info="translate-sentence" aria-label="Translation info" type="button">ⓘ</button>
+              </label>
+              <textarea id="custom-sentence-input" class="text-input" rows="2" placeholder="e.g. the hunter see the wolf"></textarea>
+              <button id="translate-sentence" class="pill-button pill-small pill-secondary" type="button">translate</button>
+            </div>
+
+            <div id="custom-sentence-output" class="custom-sentence-output"></div>
+
+            <div class="custom-word-input">
+              <label class="field-label" for="custom-word-english">create custom word
+                <button class="info-button" data-info="custom-word" aria-label="Custom word info" type="button">ⓘ</button>
+              </label>
+              <div class="custom-word-row">
+                <input id="custom-word-english" class="text-input custom-word-field" type="text" placeholder="english word">
+                <button id="generate-custom-word" class="pill-button pill-small pill-secondary" type="button">generate</button>
+              </div>
+              <div id="custom-word-output" class="custom-word-output"></div>
+            </div>
           </article>
 
           <section class="info-card">
@@ -150,80 +194,116 @@
             <div class="card-body">
               <div id="word-category-summary" class="meta-block"></div>
 
-              <div class="lexicon-double">
-                <article class="lexicon-card">
-                  <div class="card-header">
-                    <div>
-                      <div class="card-kicker">mini dictionary</div>
-                      <h3 class="card-title">nouns</h3>
-                    </div>
-                  </div>
-                  <div class="lexicon-table">
+              <div class="lexicon-grid">
+                <!-- Nouns -->
+                <div class="lex-card-wrapper">
+                  <div class="lex-card-header">nouns (1511)</div>
+                  <div class="lex-card-table">
                     <div class="lex-row lex-header">
-                      <div class="lex-col">word</div>
-                      <div class="lex-col">meaning</div>
-                      <div class="lex-col">pos</div>
+                      <div class="lex-col lex-col-native">conlang</div>
+                      <div class="lex-col lex-col-gloss">english</div>
                     </div>
-                    <div id="lexicon-nouns-body"></div>
+                    <div id="lexicon-nouns-body" class="lex-table-body"></div>
                   </div>
-                </article>
+                </div>
 
-                <article class="lexicon-card">
-                  <div class="card-header">
-                    <div>
-                      <div class="card-kicker">mini dictionary</div>
-                      <h3 class="card-title">verbs</h3>
-                    </div>
-                  </div>
-                  <div class="lexicon-table">
+                <!-- Verbs -->
+                <div class="lex-card-wrapper">
+                  <div class="lex-card-header">verbs (605)</div>
+                  <div class="lex-card-table">
                     <div class="lex-row lex-header">
-                      <div class="lex-col">word</div>
-                      <div class="lex-col">meaning</div>
-                      <div class="lex-col">pos</div>
+                      <div class="lex-col lex-col-native">conlang</div>
+                      <div class="lex-col lex-col-gloss">english</div>
                     </div>
-                    <div id="lexicon-verbs-body"></div>
+                    <div id="lexicon-verbs-body" class="lex-table-body"></div>
                   </div>
-                </article>
+                </div>
 
-                <article class="lexicon-card">
-                  <div class="card-header">
-                    <div>
-                      <div class="card-kicker">mini dictionary</div>
-                      <h3 class="card-title">descriptors (adj/adv)</h3>
-                    </div>
-                  </div>
-                  <div class="lexicon-table">
+                <!-- Descriptors -->
+                <div class="lex-card-wrapper">
+                  <div class="lex-card-header">descriptors (559)</div>
+                  <div class="lex-card-table">
                     <div class="lex-row lex-header">
-                      <div class="lex-col">word</div>
-                      <div class="lex-col">meaning</div>
-                      <div class="lex-col">pos</div>
+                      <div class="lex-col lex-col-native">conlang</div>
+                      <div class="lex-col lex-col-gloss">english</div>
                     </div>
-                    <div id="lexicon-descriptors-body"></div>
+                    <div id="lexicon-descriptors-body" class="lex-table-body"></div>
                   </div>
-                </article>
+                </div>
 
-                <article class="lexicon-card">
-                  <div class="card-header">
-                    <div>
-                      <div class="card-kicker">mini dictionary</div>
-                      <h3 class="card-title">other words</h3>
-                    </div>
-                  </div>
-                  <div class="lexicon-table">
+                <!-- Prepositions -->
+                <div class="lex-card-wrapper">
+                  <div class="lex-card-header">prepositions (54)</div>
+                  <div class="lex-card-table">
                     <div class="lex-row lex-header">
-                      <div class="lex-col">word</div>
-                      <div class="lex-col">meaning</div>
-                      <div class="lex-col">pos</div>
+                      <div class="lex-col lex-col-native">conlang</div>
+                      <div class="lex-col lex-col-gloss">english</div>
                     </div>
-                    <div id="lexicon-other-body"></div>
+                    <div id="lexicon-prepositions-body" class="lex-table-body"></div>
                   </div>
-                </article>
+                </div>
+
+                <!-- Pronouns -->
+                <div class="lex-card-wrapper">
+                  <div class="lex-card-header">pronouns (41)</div>
+                  <div class="lex-card-table">
+                    <div class="lex-row lex-header">
+                      <div class="lex-col lex-col-native">conlang</div>
+                      <div class="lex-col lex-col-gloss">english</div>
+                    </div>
+                    <div id="lexicon-pronouns-body" class="lex-table-body"></div>
+                  </div>
+                </div>
+
+                <!-- Conjunctions -->
+                <div class="lex-card-wrapper">
+                  <div class="lex-card-header">conjunctions (29)</div>
+                  <div class="lex-card-table">
+                    <div class="lex-row lex-header">
+                      <div class="lex-col lex-col-native">conlang</div>
+                      <div class="lex-col lex-col-gloss">english</div>
+                    </div>
+                    <div id="lexicon-conjunctions-body" class="lex-table-body"></div>
+                  </div>
+                </div>
+
+                <!-- Articles -->
+                <div class="lex-card-wrapper lex-card-small">
+                  <div class="lex-card-header">articles (3)</div>
+                  <div class="lex-card-table">
+                    <div class="lex-row lex-header">
+                      <div class="lex-col lex-col-native">conlang</div>
+                      <div class="lex-col lex-col-gloss">english</div>
+                    </div>
+                    <div id="lexicon-articles-body" class="lex-table-body"></div>
+                  </div>
+                </div>
+
+                <!-- Custom Translated Words -->
+                <div class="lex-card-wrapper">
+                  <div class="lex-card-header">custom translations</div>
+                  <div class="lex-card-table">
+                    <div class="lex-row lex-header">
+                      <div class="lex-col lex-col-native">conlang</div>
+                      <div class="lex-col lex-col-gloss">english</div>
+                    </div>
+                    <div id="lexicon-custom-body" class="lex-table-body"></div>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
         </section>
       </section>
     </main>
+  </div>
+
+  <div id="tooltip-overlay" class="tooltip-overlay">
+    <div class="tooltip-modal">
+      <button class="tooltip-close" aria-label="Close tooltip">×</button>
+      <h2 class="tooltip-title" id="tooltip-title"></h2>
+      <div class="tooltip-content" id="tooltip-content"></div>
+    </div>
   </div>
 
   <script src="src/presets.js"></script>

@@ -5,6 +5,8 @@
   const state = {
     config: null,
     vocab: null,
+    sentenceBank: null,
+    customLexicon: [],
     lexicon: {
       nouns: [],
       verbs: [],
@@ -16,19 +18,66 @@
     }
   };
 
+  // Helper functions (define early so they're available everywhere)
+  function pickRandom(arr) {
+    if (!arr || arr.length === 0) return "";
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  function getMorphChance(nounMorph, verbMorph) {
+    if (nounMorph === "rich" || verbMorph === "rich") return 0.5;
+    if (nounMorph === "moderate" || verbMorph === "moderate") return 0.25;
+    return 0.1;
+  }
+
   function init() {
-    loadVocabulary()
+    Promise.all([
+      loadVocabulary(),
+      loadSentenceBank()
+    ])
       .then(function () {
         rebuildIfReady();
       })
       .catch(function (err) {
-        console.error("failed to load vocabulary.json:", err);
+        console.error("failed to load data:", err);
       });
   }
 
+  async function loadSentenceBank() {
+    try {
+      const res = await fetch("data/sentenceBank.json");
+      if (!res.ok) throw new Error("Failed to load sentenceBank.json");
+      state.sentenceBank = await res.json();
+    } catch (err) {
+      console.warn("Could not load sentenceBank.json, using fallback:", err.message);
+      state.sentenceBank = {
+        svo: ["the hunter see the wolf"],
+        sov: ["the hunter the wolf see"],
+        vso: ["see the hunter the wolf"],
+        vos: ["see the wolf the hunter"],
+        osv: ["the wolf the hunter see"],
+        ovs: ["the wolf see the hunter"],
+        free: ["in the forest the hunter see the wolf"]
+      };
+    }
+  }
+
   function receiveConfig(cfg) {
+    if (!cfg) {
+      console.error("No config received");
+      return;
+    }
     state.config = cfg;
+    console.log("Config received:", state.config);
     rebuildIfReady();
+  }
+
+  function rerollSentences() {
+    if (!hasLexicon()) {
+      console.error("Cannot reroll sentences: no lexicon");
+      return;
+    }
+    renderSentences();
   }
 
   function rerollLexicon() {
@@ -42,12 +91,32 @@
     renderSentences();
   }
 
-  function rerollSentences() {
-    if (!hasLexicon()) {
-      console.error("Cannot reroll sentences: no lexicon");
-      return;
-    }
-    renderSentences();
+  function translateSentence(englishSentence) {
+    const direction = state.config?.writing?.direction || "ltr";
+    const container = document.getElementById("custom-sentence-output");
+    if (!container) return;
+
+    // Translate the sentence
+    const conlang = translateTemplateToConlang(englishSentence);
+
+    // Create and show the output card
+    const card = document.createElement("div");
+    card.className = "output-sentence-card";
+
+    const conlangLine = document.createElement("div");
+    conlangLine.className = "output-sent-conlang";
+    conlangLine.textContent = conlang;
+    applyDirectionStyle(conlangLine, direction);
+
+    const englishLine = document.createElement("div");
+    englishLine.className = "output-sent-english";
+    englishLine.textContent = englishSentence;
+
+    card.appendChild(conlangLine);
+    card.appendChild(englishLine);
+    container.innerHTML = "";
+    container.appendChild(card);
+    container.classList.add("active");
   }
 
   async function loadVocabulary() {
@@ -56,39 +125,54 @@
       if (!res.ok) throw new Error("Failed to load vocabulary.json");
       state.vocab = await res.json();
     } catch (err) {
-      throw new Error("Could not load vocabulary.json: " + err.message);
+      console.error("Could not load vocabulary.json:", err.message);
+      state.vocab = {
+        nouns: [],
+        verbs: [],
+        prepositions: [],
+        articles: [],
+        pronouns: [],
+        conjunctions: [],
+        descriptors: []
+      };
     }
   }
 
   function rebuildIfReady() {
-    if (!state.vocab || !state.config) return;
+    if (!state.vocab || !state.config) {
+      console.warn("rebuildIfReady: vocab or config missing", { vocab: !!state.vocab, config: !!state.config });
+      return;
+    }
+    console.log("rebuildIfReady: building lexicon...");
     buildLexicon();
+    console.log("rebuildIfReady: rendering lexicon...");
     renderLexicon();
+    console.log("rebuildIfReady: rendering alphabet...");
     renderAlphabetMap();
+    console.log("rebuildIfReady: rendering sentences...");
     renderSentences();
+    console.log("rebuildIfReady: complete");
   }
 
   function hasLexicon() {
-    return state.lexicon.verbs && state.lexicon.verbs.length > 0;
+    return state.lexicon && 
+           state.lexicon.nouns && 
+           state.lexicon.nouns.length > 0;
   }
 
   function buildLexicon() {
     function buildEntries(list, pos) {
-      if (!Array.isArray(list)) return [];
-      return list.map(function (gloss) {
-        const nativeWord = generateWord(state.config.phonology, state.config.writing, state.config.grammar, state.config.lexicon);
+      return list.map(function (englishWord) {
+        const conlangWord = generateWord(
+          state.config.phonology,
+          state.config.writing,
+          state.config.grammar,
+          state.config.lexicon
+        );
         return {
-          gloss: gloss,
-          native: nativeWord,
-          pos: pos,
-          root: nativeWord,
-          forms: {
-            base: nativeWord
-          },
-          etymology: state.config.lexicon?.etymology || "layered",
-          properName: shouldBeProperName(pos, state.config.lexicon?.properNames),
-          nounMorphology: state.config.grammar?.nounMorph,
-          verbMorphology: state.config.grammar?.verbMorph
+          gloss: englishWord,
+          native: conlangWord,
+          pos: pos
         };
       });
     }
@@ -104,9 +188,9 @@
 
   function shouldBeProperName(pos, properNameSetting) {
     if (!properNameSetting || properNameSetting === "none") return false;
-    if (properNameSetting === "light") return Math.random() < 0.1;
-    if (properNameSetting === "rich") return Math.random() < 0.3;
-    if (properNameSetting === "very rich") return Math.random() < 0.5;
+    if (properNameSetting === "light") return pos === "noun" && Math.random() < 0.15;
+    if (properNameSetting === "rich") return pos === "noun" && Math.random() < 0.4;
+    if (properNameSetting === "very rich") return (pos === "noun" || pos === "descriptor") && Math.random() < 0.6;
     return false;
   }
 
@@ -115,32 +199,33 @@
   function renderLexicon() {
     renderWordCategorySummary();
 
-    renderLexiconTable(state.lexicon.nouns, ["lexicon-nouns-body"]);
-    renderLexiconTable(state.lexicon.verbs, ["lexicon-verbs-body"]);
-    renderLexiconTable(state.lexicon.prepositions, ["lexicon-prepositions-body"]);
-    renderLexiconTable(state.lexicon.articles, ["lexicon-articles-body"]);
-    renderLexiconTable(state.lexicon.pronouns, ["lexicon-pronouns-body"]);
-    renderLexiconTable(state.lexicon.conjunctions, ["lexicon-conjunctions-body"]);
-    renderLexiconTable(state.lexicon.descriptors, ["lexicon-descriptors-body"]);
+    // Render all word categories
+    renderLexiconTable(state.lexicon.nouns, "lexicon-nouns-body");
+    renderLexiconTable(state.lexicon.verbs, "lexicon-verbs-body");
+    renderLexiconTable(state.lexicon.descriptors, "lexicon-descriptors-body");
+    renderLexiconTable(state.lexicon.prepositions, "lexicon-prepositions-body");
+    renderLexiconTable(state.lexicon.pronouns, "lexicon-pronouns-body");
+    renderLexiconTable(state.lexicon.conjunctions, "lexicon-conjunctions-body");
+    renderLexiconTable(state.lexicon.articles, "lexicon-articles-body");
   }
 
   function renderWordCategorySummary() {
     const el = document.getElementById("word-category-summary");
     if (!el) return;
 
-    const categories = [
-      { label: "nouns", count: state.lexicon.nouns.length },
-      { label: "verbs", count: state.lexicon.verbs.length },
-      { label: "prepositions", count: state.lexicon.prepositions.length },
-      { label: "articles", count: state.lexicon.articles.length },
-      { label: "pronouns", count: state.lexicon.pronouns.length },
-      { label: "conjunctions", count: state.lexicon.conjunctions.length },
-      { label: "descriptors", count: state.lexicon.descriptors.length }
+    const summary = [
+      `nouns: ${state.lexicon.nouns.length}`,
+      `verbs: ${state.lexicon.verbs.length}`,
+      `descriptors: ${state.lexicon.descriptors.length}`,
+      `prepositions: ${state.lexicon.prepositions.length}`,
+      `articles: ${state.lexicon.articles.length}`,
+      `pronouns: ${state.lexicon.pronouns.length}`,
+      `conjunctions: ${state.lexicon.conjunctions.length}`
     ];
 
-    el.innerHTML = categories
-      .map(function (cat) { return `<div class="meta-line">${cat.label}: ${cat.count}</div>`; })
-      .join("");
+    el.innerHTML = summary.map(function (line) {
+      return `<div class="meta-line">${line}</div>`;
+    }).join("");
   }
 
   function renderLexiconTable(entries, targetIds) {
@@ -148,7 +233,6 @@
 
     let body = null;
     for (let i = 0; i < ids.length; i++) {
-      if (!ids[i]) continue;
       body = document.getElementById(ids[i]);
       if (body) break;
     }
@@ -160,18 +244,16 @@
       const row = document.createElement("div");
       row.className = "lex-row";
 
-      const colNative = document.createElement("div");
-      colNative.className = "lex-col lex-native";
-      const displayNative = entry.properName ? capitalizeWord(entry.native) : entry.native;
-      colNative.textContent = displayNative;
+      const nativeCol = document.createElement("div");
+      nativeCol.className = "lex-col lex-col-native";
+      nativeCol.textContent = entry.native;
 
-      const colGloss = document.createElement("div");
-      colGloss.className = "lex-col lex-gloss";
-      colGloss.textContent = entry.gloss;
+      const glossCol = document.createElement("div");
+      glossCol.className = "lex-col lex-col-gloss";
+      glossCol.textContent = entry.gloss;
 
-      row.appendChild(colNative);
-      row.appendChild(colGloss);
-
+      row.appendChild(nativeCol);
+      row.appendChild(glossCol);
       body.appendChild(row);
     });
   }
@@ -183,12 +265,19 @@
 
   function renderSentences() {
     const container = document.getElementById("sentence-list");
-    if (!container) return;
+    if (!container) {
+      console.warn("sentence-list container not found");
+      return;
+    }
 
     container.innerHTML = "";
-    if (!hasLexicon()) return;
+    if (!hasLexicon() || !state.sentenceBank) {
+      console.warn("Cannot render sentences: no lexicon or sentenceBank");
+      return;
+    }
 
     const direction = state.config?.writing?.direction || "ltr";
+    const wordOrder = state.config?.grammar?.wordOrder || "svo";
     
     // Add vertical-sentences class for top-to-bottom and bottom-to-top directions
     if (direction === "ttb" || direction === "btt") {
@@ -199,7 +288,15 @@
     
     const sentences = [];
     for (let i = 0; i < 3; i++) {
-      sentences.push(makeSentence());
+      const sent = generateSentenceFromBank(wordOrder);
+      if (sent) {
+        sentences.push(sent);
+      }
+    }
+
+    if (sentences.length === 0) {
+      console.warn("No sentences generated");
+      return;
     }
 
     sentences.forEach(function (s) {
@@ -247,10 +344,20 @@
       element.style.display = "flex";
       element.style.justifyContent = "flex-start";
     } else {
-      // ltr (default)
+      // LTR (default)
       element.style.direction = "ltr";
       element.style.textAlign = "left";
     }
+  }
+
+  function wordOrderToSequence(order) {
+    const orders = {
+      "sov": ["S", "O", "V"],
+      "vso": ["V", "S", "O"],
+      "osv": ["O", "S", "V"],
+      "ovs": ["O", "V", "S"]
+    };
+    return orders[(order || "").toLowerCase()] || ["S", "V", "O"];
   }
 
   function makeSentence() {
@@ -292,19 +399,15 @@
 
     seq.forEach(function (code) {
       if (code === "S") {
-        if (slotsConlang.S_adj) {
-          conlangTokens.push(slotsConlang.S_adj);
-          glossTokens.push(slotsGloss.S_adj + " (adj)");
-        }
+        if (slotsConlang.S_adj) conlangTokens.push(slotsConlang.S_adj);
         conlangTokens.push(slotsConlang.S);
+        if (slotsGloss.S_adj) glossTokens.push(slotsGloss.S_adj);
         glossTokens.push(slotsGloss.S);
       } else if (code === "V") {
         conlangTokens.push(slotsConlang.V);
         glossTokens.push(slotsGloss.V);
-        if (slotsConlang.V_adv) {
-          conlangTokens.push(slotsConlang.V_adv);
-          glossTokens.push(slotsGloss.V_adv + " (adv)");
-        }
+        if (slotsConlang.V_adv) conlangTokens.push(slotsConlang.V_adv);
+        if (slotsGloss.V_adv) glossTokens.push(slotsGloss.V_adv);
       } else if (code === "O") {
         conlangTokens.push(slotsConlang.O);
         glossTokens.push(slotsGloss.O);
@@ -343,7 +446,7 @@
     } else {
       // Light morphology: minimal endings
       if (Math.random() < 0.1) {
-        return base + (Math.random() > 0.5 ? "-s" : "-e");
+        return base + "-a";
       }
       return base;
     }
@@ -364,7 +467,7 @@
         const affix = affixes[Math.floor(Math.random() * affixes.length)];
         if (derivation === "prefixing" && affix) {
           return affix + base;
-        } else {
+        } else if (affix) {
           return base + affix;
         }
       }
@@ -372,14 +475,13 @@
     } else if (verbMorph === "moderate") {
       // Moderate morphology: occasional tense markers
       if (Math.random() < 0.4) {
-        const endings = ["-ta", "-sin", "-sa"];
-        return base + endings[Math.floor(Math.random() * endings.length)];
+        return base + "-ta";
       }
       return base;
     } else {
       // Light morphology: minimal verb marking
       if (Math.random() < 0.15) {
-        return base + (Math.random() > 0.5 ? "-ta" : "-ed");
+        return base + "-a";
       }
       return base;
     }
@@ -410,18 +512,14 @@
       if (verbGloss.endsWith("y")) return verbGloss.slice(0, -1) + "ied";
       return verbGloss + "ed";
     } else if (tense === "progressive") {
-      if (verbGloss.endsWith("e")) return verbGloss.slice(0, -1) + "ing";
-      return verbGloss + "ing";
-    } else if (person === "3sg") {
-      if (verbGloss.endsWith("s") || verbGloss.endsWith("x") || verbGloss.endsWith("z")) {
-        return verbGloss + "es";
-      } else if (verbGloss.endsWith("y")) {
-        return verbGloss.slice(0, -1) + "ies";
-      } else {
+      return "is " + verbGloss + "ing";
+    } else {
+      // present
+      if (person === "3sg" && !verbGloss.endsWith("s")) {
         return verbGloss + "s";
       }
+      return verbGloss;
     }
-    return verbGloss;
   }
 
   function wordOrderToSequence(order) {
@@ -435,19 +533,27 @@
   }
 
   function generateWord(phonology, writing, grammar, lexicon) {
-    if (!phonology?.consonants || !phonology?.vowels) {
-      return "err";
+    if (!phonology || !phonology.consonants || !phonology.vowels) {
+      console.warn("Invalid phonology config:", phonology);
+      return "word";
     }
 
-    const maxSyl = phonology.maxSyllables || 3;
-    const syllableCount = Math.floor(Math.random() * (maxSyl - 1)) + 1;
-    const pattern = phonology.syllablePreset || "cvc";
+    const consonants = Array.isArray(phonology.consonants) ? phonology.consonants : phonology.consonants.split(/\s+/);
+    const vowels = Array.isArray(phonology.vowels) ? phonology.vowels : phonology.vowels.split(/\s+/);
+    
+    if (consonants.length === 0 || vowels.length === 0) {
+      return "word";
+    }
+
+    const maxSyl = parseInt(phonology.maxSyllables) || 3;
+    const syllableCount = Math.floor(Math.random() * Math.max(1, maxSyl - 1)) + 1;
+    const pattern = phonology.syllablePattern || "cvc";
     const patternParts = pattern.includes("-") ? pattern.split("-") : [pattern];
     const syllables = [];
 
     for (let s = 0; s < syllableCount; s++) {
       const selectedPattern = patternParts[s % patternParts.length];
-      const syl = generateSyllable(selectedPattern, phonology);
+      const syl = generateSyllable(selectedPattern, { consonants, vowels });
       if (syl.length > 0) {
         syllables.push(syl);
       }
@@ -456,56 +562,14 @@
     let result = syllables.join("");
     result = result.length > 0 ? result : "word";
 
-    // Apply derivational morphology based on grammar settings
-    const morphChance = getMorphChance(grammar?.nounMorph, grammar?.verbMorph);
-    if (Math.random() < morphChance) {
-      if (grammar?.derivation === "prefixing") {
-        const prefix = generateSyllable("cv", phonology);
-        result = prefix + result;
-      } else if (grammar?.derivation === "suffixing") {
-        const suffix = generateSyllable("cv", phonology);
-        result = result + suffix;
-      } else if (grammar?.derivation === "infixing") {
-        const splitPoint = Math.floor(result.length / 2);
-        const infix = generateSyllable("cv", phonology);
-        result = result.slice(0, splitPoint) + infix + result.slice(splitPoint);
-      }
-    }
-
-    // Apply etymology-based sound changes
-    if (lexicon?.etymology === "layered" && Math.random() < 0.15) {
-      result = applyRandomSoundChange(result, phonology);
-    }
-
-    // RTL writing direction handled at display level, not generation
     return result;
-  }
-
-  function getMorphChance(nounMorph, verbMorph) {
-    const nounChance = nounMorph === "rich" ? 0.35 : nounMorph === "moderate" ? 0.15 : 0.05;
-    const verbChance = verbMorph === "rich" ? 0.35 : verbMorph === "moderate" ? 0.15 : 0.05;
-    return Math.max(nounChance, verbChance);
-  }
-
-  function applyRandomSoundChange(word, phonology) {
-    if (word.length < 2) return word;
-    
-    const changes = [
-      function (w) { return w.replace(/p/g, "f").replace(/b/g, "v").replace(/t/g, "s").replace(/d/g, "z"); },
-      function (w) { return w.replace(/k/g, "x").replace(/g/g, "ɣ"); },
-      function (w) { return w.replace(/s/g, "ʃ").replace(/z/g, "ʒ"); }
-    ];
-    
-    const randomChange = changes[Math.floor(Math.random() * changes.length)];
-    return randomChange(word);
-  }
-
-  function reverseString(str) {
-    return str;
   }
 
   function generateSyllable(pattern, phonology) {
     if (!pattern || !phonology) return "";
+    
+    const consonants = Array.isArray(phonology.consonants) ? phonology.consonants : phonology.consonants.split(/\s+/);
+    const vowels = Array.isArray(phonology.vowels) ? phonology.vowels : phonology.vowels.split(/\s+/);
     
     const syllable = [];
 
@@ -513,35 +577,35 @@
       const char = pattern[i].toUpperCase();
 
       if (char === "C") {
-        const cons = pickRandom(phonology.consonants);
-        if (cons) syllable.push(cons);
+        syllable.push(pickRandom(consonants));
       } else if (char === "V") {
-        const vowel = pickRandom(phonology.vowels);
-        if (vowel) syllable.push(vowel);
+        syllable.push(pickRandom(vowels));
       } else if (char === "X") {
-        if (Math.random() > 0.5) {
-          const cons = pickRandom(phonology.consonants);
-          if (cons) syllable.push(cons);
-        }
+        // Consonant or glide
+        const combined = consonants.concat(vowels);
+        syllable.push(pickRandom(combined));
       } else if (char === "L") {
-        const liquids = phonology.consonants.filter(function (c) {
-          return c === "l" || c === "r" || c === "ɾ" || c === "ɹ";
-        });
-        if (liquids.length > 0) {
-          syllable.push(pickRandom(liquids));
-        } else {
-          const cons = pickRandom(phonology.consonants);
-          if (cons) syllable.push(cons);
-        }
+        // Liquid/approximant (use first consonant or 'l')
+        syllable.push(consonants.length > 0 ? consonants[0] : "l");
+      } else if (char === "S") {
+        // Sibilant (use first consonant)
+        syllable.push(consonants.length > 0 ? consonants[0] : "s");
       }
     }
 
     return syllable.join("");
   }
 
-  function pickRandom(arr) {
-    if (!arr || arr.length === 0) return "";
-    return arr[Math.floor(Math.random() * arr.length)];
+  function applyRandomSoundChange(word, phonology) {
+    // Simple sound change: replace a consonant with another
+    if (word.length < 2) return word;
+    const idx = Math.floor(Math.random() * word.length);
+    const oldChar = word[idx];
+    if (phonology.consonants.includes(oldChar)) {
+      const newChar = pickRandom(phonology.consonants);
+      return word.slice(0, idx) + newChar + word.slice(idx + 1);
+    }
+    return word;
   }
 
   function renderAlphabetMap() {
@@ -550,75 +614,297 @@
 
     container.innerHTML = "";
 
-    const englishVowels = ["a", "e", "i", "o", "u", "aa", "ee", "ii", "oo", "uu", "ae", "oe", "ue"];
-    const englishConsonants = ["b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "y", "z", "sh", "th", "ch"];
+    // Full English alphabet including double letters for better phoneme coverage
+    const englishLetters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"];
+    const englishConsonants = ["b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "y", "z", "ch", "ng", "th", "sh", "zh"];
+    const englishVowels = ["a", "e", "i", "o", "u", "aa", "ee", "oo", "ii", "ai", "au", "oi", "ae", "oe", "ue"];
+    
+    const consonants = Array.isArray(state.config.phonology.consonants) 
+      ? state.config.phonology.consonants 
+      : (state.config.phonology.consonants || "").split(/\s+/);
+    const vowels = Array.isArray(state.config.phonology.vowels)
+      ? state.config.phonology.vowels
+      : (state.config.phonology.vowels || "").split(/\s+/);
+    
+    const conlangPhonemes = consonants.concat(vowels).filter(function(p) { return p.length > 0; });
+    const mapping = buildMapping(conlangPhonemes, englishLetters.concat(englishConsonants.slice(21)).concat(englishVowels.slice(5)));
 
-    const conlangVowels = state.config.phonology.vowels || [];
-    const conlangConsonants = state.config.phonology.consonants || [];
+    // Consonants section
+    const consonantSection = document.createElement("div");
+    consonantSection.className = "alphabet-section";
+    
+    const consonantTitle = document.createElement("h4");
+    consonantTitle.className = "alphabet-section-title";
+    consonantTitle.textContent = "consonants";
+    consonantSection.appendChild(consonantTitle);
 
-    const vowelMapping = buildMapping(conlangVowels, englishVowels);
-    const consonantMapping = buildMapping(conlangConsonants, englishConsonants);
-
-    const vowelHeader = document.createElement("div");
-    vowelHeader.className = "alphabet-section-header";
-    vowelHeader.textContent = "Vowels";
-    container.appendChild(vowelHeader);
-
-    englishVowels.forEach(function (englishLetter) {
-      const row = document.createElement("div");
-      row.className = "alphabet-row";
-
-      const englishEl = document.createElement("div");
-      englishEl.className = "alphabet-english";
-      englishEl.textContent = englishLetter;
-
-      const conlangEl = document.createElement("div");
-      conlangEl.className = "alphabet-conlang";
-      conlangEl.textContent = vowelMapping[englishLetter] || "-";
-
-      row.appendChild(englishEl);
-      row.appendChild(conlangEl);
-      container.appendChild(row);
+    const consonantGrid = document.createElement("div");
+    consonantGrid.className = "alphabet-mapping-grid";
+    
+    englishConsonants.forEach(function (letter) {
+      const chip = document.createElement("div");
+      chip.className = "alphabet-mapping";
+      
+      const english = document.createElement("div");
+      english.className = "alphabet-mapping-english";
+      english.textContent = letter.toUpperCase();
+      
+      const conlang = document.createElement("div");
+      conlang.className = "alphabet-mapping-conlang";
+      conlang.textContent = mapping[letter] || "—";
+      
+      chip.appendChild(english);
+      chip.appendChild(conlang);
+      consonantGrid.appendChild(chip);
     });
+    
+    consonantSection.appendChild(consonantGrid);
+    container.appendChild(consonantSection);
 
-    const consonantHeader = document.createElement("div");
-    consonantHeader.className = "alphabet-section-header";
-    consonantHeader.textContent = "Consonants";
-    container.appendChild(consonantHeader);
+    // Vowels section
+    const vowelSection = document.createElement("div");
+    vowelSection.className = "alphabet-section";
+    
+    const vowelTitle = document.createElement("h4");
+    vowelTitle.className = "alphabet-section-title";
+    vowelTitle.textContent = "vowels";
+    vowelSection.appendChild(vowelTitle);
 
-    englishConsonants.forEach(function (englishLetter) {
-      const row = document.createElement("div");
-      row.className = "alphabet-row";
-
-      const englishEl = document.createElement("div");
-      englishEl.className = "alphabet-english";
-      englishEl.textContent = englishLetter;
-
-      const conlangEl = document.createElement("div");
-      conlangEl.className = "alphabet-conlang";
-      conlangEl.textContent = consonantMapping[englishLetter] || "-";
-
-      row.appendChild(englishEl);
-      row.appendChild(conlangEl);
-      container.appendChild(row);
+    const vowelGrid = document.createElement("div");
+    vowelGrid.className = "alphabet-mapping-grid";
+    
+    englishVowels.forEach(function (letter) {
+      const chip = document.createElement("div");
+      chip.className = "alphabet-mapping";
+      
+      const english = document.createElement("div");
+      english.className = "alphabet-mapping-english";
+      english.textContent = letter.toUpperCase();
+      
+      const conlang = document.createElement("div");
+      conlang.className = "alphabet-mapping-conlang";
+      conlang.textContent = mapping[letter] || "—";
+      
+      chip.appendChild(english);
+      chip.appendChild(conlang);
+      vowelGrid.appendChild(chip);
     });
+    
+    vowelSection.appendChild(vowelGrid);
+    container.appendChild(vowelSection);
   }
 
   function buildMapping(conlangPhonemes, englishSlots) {
     const mapping = {};
+    const fullEnglishAlphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "ch", "ng", "th", "sh", "zh", "aa", "ee", "oo", "ii", "ai", "au", "oi", "ae", "oe", "ue"];
+    
     conlangPhonemes.forEach(function (phoneme, idx) {
-      if (idx < englishSlots.length) {
-        mapping[englishSlots[idx]] = phoneme;
+      if (idx < fullEnglishAlphabet.length) {
+        mapping[fullEnglishAlphabet[idx]] = phoneme;
       }
     });
     return mapping;
+  }
+
+  function generateSentenceFromBank(wordOrder) {
+    if (!state.sentenceBank || !hasLexicon()) {
+      // Fallback to structured generation if no bank
+      return makeSentence();
+    }
+
+    // Select bucket based on word order, or use free bucket sometimes
+    let bucket = state.sentenceBank[wordOrder] || state.sentenceBank.svo;
+    
+    // Occasionally pick a free/poetic sentence
+    if (Math.random() < 0.2 && state.sentenceBank.free && state.sentenceBank.free.length > 0) {
+      bucket = state.sentenceBank.free;
+    }
+
+    if (!bucket || bucket.length === 0) {
+      return makeSentence();
+    }
+
+    // Pick a random template sentence
+    const template = pickRandom(bucket);
+    
+    // Map English words in template to conlang words
+    const conlang = translateTemplateToConlang(template);
+    const english = template;
+
+    return { conlang, english };
+  }
+
+  function translateTemplateToConlang(template) {
+    if (!template) return "";
+    
+    const words = template.split(/\s+/);
+    const conlangWords = [];
+
+    words.forEach(function (englishWord) {
+      if (englishWord.length === 0) return;
+      
+      // Remove punctuation for lookup
+      const cleanWord = englishWord.replace(/[.,!?;:—–-]+$/g, "").toLowerCase();
+      const trailing = englishWord.substring(cleanWord.length);
+      
+      const conlangWord = findOrGenerateWord(cleanWord);
+      conlangWords.push(conlangWord + trailing);
+    });
+
+    return conlangWords.join(" ");
+  }
+
+  function findOrGenerateWord(englishWord) {
+    if (!englishWord || englishWord.length === 0) return "";
+    
+    // Try to find the word in the lexicon
+    const lowerWord = englishWord.toLowerCase().trim();
+    
+    // Check all lexicon categories
+    const allEntries = state.lexicon.nouns
+      .concat(state.lexicon.verbs)
+      .concat(state.lexicon.descriptors)
+      .concat(state.lexicon.prepositions)
+      .concat(state.lexicon.articles)
+      .concat(state.lexicon.pronouns)
+      .concat(state.lexicon.conjunctions);
+
+    const entry = allEntries.find(function (e) {
+      return e.gloss && e.gloss.toLowerCase() === lowerWord;
+    });
+
+    if (entry) {
+      return entry.native;
+    }
+
+    // Check custom lexicon
+    const customEntry = state.customLexicon.find(function (e) {
+      return e.gloss && e.gloss.toLowerCase() === lowerWord;
+    });
+
+    if (customEntry) {
+      return customEntry.native;
+    }
+
+    // If not found, generate a word and add to custom lexicon
+    const generated = generateWord(state.config.phonology, state.config.writing, state.config.grammar, state.config.lexicon);
+    addToCustomLexicon(englishWord, generated);
+    return generated;
+  }
+
+  function addToCustomLexicon(englishWord, conlangWord) {
+    // Check if already exists
+    const exists = state.customLexicon.some(function (entry) {
+      return entry.gloss === englishWord;
+    });
+
+    if (!exists) {
+      state.customLexicon.push({
+        gloss: englishWord,
+        native: conlangWord,
+        pos: "custom"
+      });
+    }
+
+    renderCustomLexicon();
+  }
+
+  function renderCustomLexicon() {
+    const body = document.getElementById("lexicon-custom-body");
+    if (!body) return;
+
+    body.innerHTML = "";
+    state.customLexicon.forEach(function (entry) {
+      const row = document.createElement("div");
+      row.className = "lex-row";
+
+      const nativeCol = document.createElement("div");
+      nativeCol.className = "lex-col lex-col-native";
+      nativeCol.textContent = entry.native;
+
+      const glossCol = document.createElement("div");
+      glossCol.className = "lex-col lex-col-gloss";
+      glossCol.textContent = entry.gloss;
+
+      row.appendChild(nativeCol);
+      row.appendChild(glossCol);
+      body.appendChild(row);
+    });
+  }
+
+  function generateCustomWord(englishWord) {
+    if (!englishWord || englishWord.length === 0) return "";
+    if (!state.config?.phonology) return englishWord;
+    
+    const fullEnglishAlphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "ch", "ng", "th", "sh", "zh", "aa", "ee", "oo", "ii", "ai", "au", "oi", "ae", "oe", "ue"];
+    const consonants = Array.isArray(state.config.phonology.consonants) 
+      ? state.config.phonology.consonants 
+      : (state.config.phonology.consonants || "").split(/\s+/);
+    const vowels = Array.isArray(state.config.phonology.vowels)
+      ? state.config.phonology.vowels
+      : (state.config.phonology.vowels || "").split(/\s+/);
+    
+    const conlangPhonemes = consonants.concat(vowels).filter(function(p) { return p.length > 0; });
+    const mapping = buildMapping(conlangPhonemes, fullEnglishAlphabet);
+    
+    let result = "";
+    let i = 0;
+    
+    while (i < englishWord.length) {
+      // Try two-character sequences first
+      if (i + 1 < englishWord.length) {
+        const twoChar = englishWord.substring(i, i + 2).toLowerCase();
+        if (mapping[twoChar]) {
+          result += mapping[twoChar];
+          i += 2;
+          continue;
+        }
+      }
+      
+      // Fall back to single character
+      const char = englishWord[i].toLowerCase();
+      if (mapping[char]) {
+        result += mapping[char];
+      } else if (char === " ") {
+        result += " ";
+      }
+      // Skip unmapped characters
+      i++;
+    }
+    
+    return result.length > 0 ? result : englishWord;
+  }
+
+  function renderCustomWordOutput(englishWord, conlangWord) {
+    const container = document.getElementById("custom-word-output");
+    if (!container) return;
+
+    container.innerHTML = "";
+    const card = document.createElement("div");
+    card.className = "custom-word-result";
+
+    const englishLine = document.createElement("div");
+    englishLine.className = "custom-word-result-english";
+    englishLine.textContent = englishWord;
+
+    const conlangLine = document.createElement("div");
+    conlangLine.className = "custom-word-result-conlang";
+    conlangLine.textContent = conlangWord;
+
+    card.appendChild(englishLine);
+    card.appendChild(conlangLine);
+    container.appendChild(card);
+    container.classList.add("active");
   }
 
   window.LanguageGenerator = {
     init,
     receiveConfig,
     rerollLexicon,
-    rerollSentences
+    rerollSentences,
+    translateSentence,
+    generateCustomWord,
+    renderCustomWordOutput
   };
 })();
 
