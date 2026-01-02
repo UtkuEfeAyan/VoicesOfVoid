@@ -489,10 +489,28 @@ body {
   flex: 1;
 }
 
-.alphabet-section {
+.alphabet-main-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.alphabet-main-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #e0e7ff;
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid rgba(168, 85, 247, 0.6);
+}
+
+.alphabet-subsection {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  padding-left: 8px;
 }
 
 .alphabet-section-title {

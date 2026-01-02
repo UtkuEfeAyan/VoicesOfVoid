@@ -614,11 +614,6 @@
 
     container.innerHTML = "";
 
-    // Full English alphabet including double letters for better phoneme coverage
-    const englishLetters = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"];
-    const englishConsonants = ["b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "y", "z", "ch", "ng", "th", "sh", "zh"];
-    const englishVowels = ["a", "e", "i", "o", "u", "aa", "ee", "oo", "ii", "ai", "au", "oi", "ae", "oe", "ue"];
-    
     const consonants = Array.isArray(state.config.phonology.consonants) 
       ? state.config.phonology.consonants 
       : (state.config.phonology.consonants || "").split(/\s+/);
@@ -626,17 +621,29 @@
       ? state.config.phonology.vowels
       : (state.config.phonology.vowels || "").split(/\s+/);
     
-    const conlangPhonemes = consonants.concat(vowels).filter(function(p) { return p.length > 0; });
-    const mapping = buildMapping(conlangPhonemes, englishLetters.concat(englishConsonants.slice(21)).concat(englishVowels.slice(5)));
+    const mapping = buildSeparateMapping(consonants, vowels);
 
-    // Consonants section
-    const consonantSection = document.createElement("div");
-    consonantSection.className = "alphabet-section";
+    // English consonant inventory for display
+    const englishConsonants = [
+      "b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "y", "z",
+      "ch", "sh", "th", "gh", "ph", "ng", "zh", "ts", "dj", "kh", "tr", "dr", "br", "gr", "fr", "pr", "kr", "wr", "wh", "qu",
+      "sch", "tch", "dge", "igh", "ough", "tion", "sion", "chr", "thr", "str", "spr", "scr", "ç", "ğ", "ş"
+    ];
     
-    const consonantTitle = document.createElement("h4");
-    consonantTitle.className = "alphabet-section-title";
-    consonantTitle.textContent = "consonants";
-    consonantSection.appendChild(consonantTitle);
+    // English vowel inventory for display
+    const englishVowels = [
+      "a", "e", "i", "o", "u",
+      "ai", "au", "ei", "oi", "ou", "aa", "ee", "ii", "oo", "uu"
+    ];
+
+    // CONSONANTS section (main title)
+    const consonantMainSection = document.createElement("div");
+    consonantMainSection.className = "alphabet-main-section";
+    
+    const consonantMainTitle = document.createElement("h3");
+    consonantMainTitle.className = "alphabet-main-title";
+    consonantMainTitle.textContent = "consonants";
+    consonantMainSection.appendChild(consonantMainTitle);
 
     const consonantGrid = document.createElement("div");
     consonantGrid.className = "alphabet-mapping-grid";
@@ -651,24 +658,24 @@
       
       const conlang = document.createElement("div");
       conlang.className = "alphabet-mapping-conlang";
-      conlang.textContent = mapping[letter] || "—";
+      conlang.textContent = mapping.consonants[letter] || "—";
       
       chip.appendChild(english);
       chip.appendChild(conlang);
       consonantGrid.appendChild(chip);
     });
     
-    consonantSection.appendChild(consonantGrid);
-    container.appendChild(consonantSection);
+    consonantMainSection.appendChild(consonantGrid);
+    container.appendChild(consonantMainSection);
 
-    // Vowels section
-    const vowelSection = document.createElement("div");
-    vowelSection.className = "alphabet-section";
+    // VOWELS section (main title)
+    const vowelMainSection = document.createElement("div");
+    vowelMainSection.className = "alphabet-main-section";
     
-    const vowelTitle = document.createElement("h4");
-    vowelTitle.className = "alphabet-section-title";
-    vowelTitle.textContent = "vowels";
-    vowelSection.appendChild(vowelTitle);
+    const vowelMainTitle = document.createElement("h3");
+    vowelMainTitle.className = "alphabet-main-title";
+    vowelMainTitle.textContent = "vowels";
+    vowelMainSection.appendChild(vowelMainTitle);
 
     const vowelGrid = document.createElement("div");
     vowelGrid.className = "alphabet-mapping-grid";
@@ -683,26 +690,76 @@
       
       const conlang = document.createElement("div");
       conlang.className = "alphabet-mapping-conlang";
-      conlang.textContent = mapping[letter] || "—";
+      conlang.textContent = mapping.vowels[letter] || "—";
       
       chip.appendChild(english);
       chip.appendChild(conlang);
       vowelGrid.appendChild(chip);
     });
     
-    vowelSection.appendChild(vowelGrid);
-    container.appendChild(vowelSection);
+    vowelMainSection.appendChild(vowelGrid);
+    container.appendChild(vowelMainSection);
   }
 
   function buildMapping(conlangPhonemes, englishSlots) {
     const mapping = {};
-    const fullEnglishAlphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "ch", "ng", "th", "sh", "zh", "aa", "ee", "oo", "ii", "ai", "au", "oi", "ae", "oe", "ue"];
+    // Expanded English alphabet with 2-letter, 3-letter combinations and special characters
+    const fullEnglishAlphabet = [
+      // Single letters (26)
+      "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
+      // 2-letter consonant combinations (20)
+      "ch", "sh", "th", "gh", "ph", "ng", "zh", "ts", "dj", "kh", "tr", "dr", "br", "gr", "fr", "pr", "kr", "wr", "wh", "qu",
+      // 2-letter vowel/diphthong combinations (15)
+      "ai", "au", "ei", "eu", "oi", "ou", "aa", "ee", "ii", "oo", "uu", "ae", "oe", "ue", "aw",
+      // 3-letter combinations (12)
+      "sch", "tch", "dge", "igh", "ough", "tion", "sion", "chr", "thr", "str", "spr", "scr",
+      // Turkish special characters (8)
+      "ç", "ğ", "ş", "ı", "ü", "ö", "c", "g"
+    ];
     
     conlangPhonemes.forEach(function (phoneme, idx) {
-      if (idx < fullEnglishAlphabet.length) {
-        mapping[fullEnglishAlphabet[idx]] = phoneme;
-      }
+      // Cycle through expanded alphabet if we have more conlang phonemes than slots
+      const englishIdx = idx % fullEnglishAlphabet.length;
+      mapping[fullEnglishAlphabet[englishIdx]] = phoneme;
     });
+    return mapping;
+  }
+
+  function buildSeparateMapping(consonants, vowels) {
+    const mapping = { consonants: {}, vowels: {} };
+    
+    // English consonant mappings - complete list of single, 2-letter, and 3-letter consonants
+    const englishConsonants = [
+      // Single letters (21)
+      "b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "y", "z",
+      // 2-letter consonant combinations (20)
+      "ch", "sh", "th", "gh", "ph", "ng", "zh", "ts", "dj", "kh", "tr", "dr", "br", "gr", "fr", "pr", "kr", "wr", "wh", "qu",
+      // 3-letter combinations (12)
+      "sch", "tch", "dge", "igh", "ough", "tion", "sion", "chr", "thr", "str", "spr", "scr",
+      // Special characters (3)
+      "ç", "ğ", "ş"
+    ];
+    
+    // English vowel mappings (simplified)
+    const englishVowels = [
+      // Single letters (5)
+      "a", "e", "i", "o", "u",
+      // 2-letter vowel/diphthong combinations (10)
+      "ai", "au", "ei", "oi", "ou", "aa", "ee", "ii", "oo", "uu"
+    ];
+    
+    // Map consonants - all conlang consonants get mapped to English consonants
+    consonants.forEach(function (phoneme, idx) {
+      const englishIdx = idx % englishConsonants.length;
+      mapping.consonants[englishConsonants[englishIdx]] = phoneme;
+    });
+    
+    // Map vowels - all conlang vowels get mapped to English vowels
+    vowels.forEach(function (phoneme, idx) {
+      const englishIdx = idx % englishVowels.length;
+      mapping.vowels[englishVowels[englishIdx]] = phoneme;
+    });
+    
     return mapping;
   }
 
@@ -836,7 +893,6 @@
     if (!englishWord || englishWord.length === 0) return "";
     if (!state.config?.phonology) return englishWord;
     
-    const fullEnglishAlphabet = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z", "ch", "ng", "th", "sh", "zh", "aa", "ee", "oo", "ii", "ai", "au", "oi", "ae", "oe", "ue"];
     const consonants = Array.isArray(state.config.phonology.consonants) 
       ? state.config.phonology.consonants 
       : (state.config.phonology.consonants || "").split(/\s+/);
@@ -844,32 +900,67 @@
       ? state.config.phonology.vowels
       : (state.config.phonology.vowels || "").split(/\s+/);
     
-    const conlangPhonemes = consonants.concat(vowels).filter(function(p) { return p.length > 0; });
-    const mapping = buildMapping(conlangPhonemes, fullEnglishAlphabet);
+    const mapping = buildSeparateMapping(consonants, vowels);
+    
+    // English vowel and consonant sets for identification
+    const englishConsonantSet = new Set([
+      "b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "y", "z",
+      "ch", "sh", "th", "gh", "ph", "ng", "zh", "ts", "dj", "kh", "tr", "dr", "br", "gr", "fr", "pr", "kr", "wr", "wh", "qu",
+      "sch", "tch", "dge", "igh", "ough", "tion", "sion", "chr", "thr", "str", "spr", "scr", "ç", "ğ", "ş"
+    ]);
+    
+    const englishVowelSet = new Set([
+      "a", "e", "i", "o", "u",
+      "ai", "au", "ei", "oi", "ou", "aa", "ee", "ii", "oo", "uu"
+    ]);
     
     let result = "";
     let i = 0;
     
     while (i < englishWord.length) {
-      // Try two-character sequences first
-      if (i + 1 < englishWord.length) {
+      let matched = false;
+      
+      // Try 3-character sequences first
+      if (i + 2 < englishWord.length) {
+        const threeChar = englishWord.substring(i, i + 3).toLowerCase();
+        if (englishConsonantSet.has(threeChar) && mapping.consonants[threeChar]) {
+          result += mapping.consonants[threeChar];
+          i += 3;
+          matched = true;
+        } else if (englishVowelSet.has(threeChar) && mapping.vowels[threeChar]) {
+          result += mapping.vowels[threeChar];
+          i += 3;
+          matched = true;
+        }
+      }
+      
+      // Try two-character sequences
+      if (!matched && i + 1 < englishWord.length) {
         const twoChar = englishWord.substring(i, i + 2).toLowerCase();
-        if (mapping[twoChar]) {
-          result += mapping[twoChar];
+        if (englishConsonantSet.has(twoChar) && mapping.consonants[twoChar]) {
+          result += mapping.consonants[twoChar];
           i += 2;
-          continue;
+          matched = true;
+        } else if (englishVowelSet.has(twoChar) && mapping.vowels[twoChar]) {
+          result += mapping.vowels[twoChar];
+          i += 2;
+          matched = true;
         }
       }
       
       // Fall back to single character
-      const char = englishWord[i].toLowerCase();
-      if (mapping[char]) {
-        result += mapping[char];
-      } else if (char === " ") {
-        result += " ";
+      if (!matched) {
+        const char = englishWord[i].toLowerCase();
+        if (englishConsonantSet.has(char) && mapping.consonants[char]) {
+          result += mapping.consonants[char];
+        } else if (englishVowelSet.has(char) && mapping.vowels[char]) {
+          result += mapping.vowels[char];
+        } else if (char === " ") {
+          result += " ";
+        }
+        // Skip unmapped characters
+        i++;
       }
-      // Skip unmapped characters
-      i++;
     }
     
     return result.length > 0 ? result : englishWord;

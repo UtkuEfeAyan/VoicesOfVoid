@@ -16,8 +16,8 @@ window.LANGUAGE_PRESETS = {
       maxSyllables: 4
     },
     phonology: {
-      consonants: ["b", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "r", "s", "t", "v", "w", "z", "sh", "th", "ch", "ð", "θ", "ʃ", "ʒ"],
-      vowels: ["a", "e", "i", "o", "u", "æ", "ø", "aa", "ee", "oo", "ii", "ai", "au", "oi", "ae", "oe", "ue", "eː", "iː", "oː"],
+      consonants: ["b", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "r", "s", "t", "v", "w", "z", "sh", "th", "ch", "ph", "ng", "ð", "θ", "ʃ", "ʒ", "ʎ", "ɲ", "ɣ", "ʁ", "ʋ"],
+      vowels: ["a", "e", "i", "o", "u", "æ", "ø", "ɛ", "ɔ", "aa", "ee", "ii", "oo", "uu", "ai", "au", "oi", "ae", "oe", "ue", "ə"],
       syllablePreset: "cvc",
       maxSyllables: 4
     },
@@ -36,7 +36,7 @@ window.LANGUAGE_PRESETS = {
       maxSyllables: 3
     },
     phonology: {
-      consonants: ["b", "d", "f", "g", "h", "k", "l", "m", "n", "p", "r", "t", "v", "w", "ɣ", "ʀ", "ŋ", "x", "χ", "ʁ", "kh", "gh", "th"],
+      consonants: ["b", "d", "f", "g", "h", "k", "l", "m", "n", "p", "r", "t", "v", "w", "ɣ", "ʀ", "ŋ", "x", "χ", "ʁ", "kh", "gh", "th", "sh", "br", "gr", "ɑ", "ɒ"],
       vowels: ["a", "o", "u", "ɑ", "ɔ", "ɪ", "ʊ", "aa", "oo", "uu", "au", "ao", "ou", "aː", "oː", "uː"],
       syllablePreset: "ccvc",
       maxSyllables: 3
@@ -56,8 +56,8 @@ window.LANGUAGE_PRESETS = {
       maxSyllables: 4
     },
     phonology: {
-      consonants: ["b", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "r", "s", "t", "v", "w", "z", "sh", "th", "ch", "ŋ", "ʃ", "ð", "θ"],
-      vowels: ["a", "e", "i", "o", "u", "æ", "ɪ", "ɛ", "ʊ", "ɔ", "ə", "ai", "au", "oi", "iː", "eː", "oː", "uː"],
+      consonants: ["b", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "r", "s", "t", "v", "w", "z", "sh", "th", "ch", "ŋ", "ʃ", "ð", "θ", "ng", "ts", "ɦ", "ɟ", "ʃ"],
+      vowels: ["a", "e", "i", "o", "u", "æ", "ɪ", "ɛ", "ʊ", "ɔ", "ə", "ai", "au", "oi", "iː", "eː", "oː", "uː", "ɑ"],
       syllablePreset: "cvc",
       maxSyllables: 4
     },
@@ -76,8 +76,8 @@ window.LANGUAGE_PRESETS = {
       maxSyllables: 3
     },
     phonology: {
-      consonants: ["b", "d", "f", "g", "h", "k", "l", "m", "n", "p", "r", "s", "t", "v", "w", "z", "ch", "sch", "pf", "ts", "ŋ", "x", "ʃ", "ʒ", "ç"],
-      vowels: ["a", "e", "i", "o", "u", "ɪ", "ʊ", "ɛ", "ɔ", "ø", "ʏ", "aa", "ee", "ii", "oo", "uu", "ai", "au", "ei", "aː", "eː", "iː", "oː", "uː"],
+      consonants: ["b", "d", "f", "g", "h", "k", "l", "m", "n", "p", "r", "s", "t", "v", "w", "z", "ch", "sh", "sch", "pf", "ts", "ŋ", "x", "ʃ", "ʒ", "ç", "ɣ", "ʁ", "ɦ"],
+      vowels: ["a", "e", "i", "o", "u", "ɪ", "ʊ", "ɛ", "ɔ", "ø", "ʏ", "aa", "ee", "ii", "oo", "uu", "ai", "au", "ei", "aː", "eː", "iː", "oː", "uː", "ə"],
       syllablePreset: "ccvc",
       maxSyllables: 3
     },
@@ -96,8 +96,8 @@ window.LANGUAGE_PRESETS = {
       maxSyllables: 4
     },
     phonology: {
-      consonants: ["b", "d", "f", "g", "h", "k", "l", "m", "n", "p", "r", "s", "t", "v", "z", "sh", "zh", "kh", "ts", "ch", "ŋ", "ʃ", "ʒ", "x", "ʂ", "ʐ"],
-      vowels: ["a", "e", "i", "o", "u", "ɪ", "ə", "ɛ", "ɔ", "ʊ", "yː", "ə", "aa", "ee", "ii", "oo", "uu", "ai", "au", "oi", "aː", "eː", "iː", "oː", "uː"],
+      consonants: ["b", "d", "f", "g", "h", "k", "l", "m", "n", "p", "r", "s", "t", "v", "z", "sh", "zh", "kh", "ts", "ch", "ŋ", "ʃ", "ʒ", "x", "ʂ", "ʐ", "ɦ", "ɟ", "ʎ"],
+      vowels: ["a", "e", "i", "o", "u", "ɪ", "ə", "ɛ", "ɔ", "ʊ", "yː", "aa", "ee", "ii", "oo", "uu", "ai", "au", "oi", "aː", "eː", "iː", "oː", "uː", "ɑ"],
       syllablePreset: "ccvc",
       maxSyllables: 4
     },
@@ -156,8 +156,8 @@ window.LANGUAGE_PRESETS = {
       maxSyllables: 4
     },
     phonology: {
-      consonants: ["p", "b", "t", "d", "k", "g", "f", "s", "z", "ʃ", "x", "ɣ", "m", "n", "r", "l", "ʀ", "ŋ", "sh", "y", "th", "ch", "χ", "ʁ", "ħ", "ʕ", "θ", "ð", "ʔ", "ʒ", "ɬ", "ɸ", "β"],
-      vowels: ["a", "o", "u", "e", "i", "ɑ", "ɔ", "ɪ", "æ", "ø", "aa", "ee", "oo", "ii", "ai", "au", "oi", "ae", "oe", "ue", "iː", "eː", "aː", "oː", "uː", "yː", "ɨ", "ʉ", "ɔ", "ʊ"],
+      consonants: ["ʃ", "ʒ", "ɕ", "ʂ", "ʐ", "χ", "ʁ", "ħ", "ʕ", "θ", "ð", "ʔ", "ɬ", "ɸ", "β", "ŋ", "ʀ", "x", "ɣ", "ç", "ğ", "ş", "ʋ", "ɦ", "ɲ", "ɱ", "ʙ", "ʰ", "ʼ", "ˀ", "ˁ", "ˤ", "ʍ", "ɕ", "ʑ", "ɞ", "ɟ", "ɕ"],
+      vowels: ["ɑ", "ɔ", "ɪ", "æ", "ø", "ə", "iː", "eː", "aː", "oː", "uː", "ɨ", "ʉ", "ʊ", "ɛ", "œ", "ɒ", "ʌ", "ə̃", "ɐ", "ɞ", "ɤ", "ʚ", "ɚ", "ɝ", "ʏ", "ɫ", "ɯ", "ɑ̃", "ɔ̃", "ɞ", "ʊ̃"],
       syllablePreset: "ccvc",
       maxSyllables: 4
     },
@@ -176,7 +176,7 @@ window.LANGUAGE_PRESETS = {
       maxSyllables: 2
     },
     phonology: {
-      consonants: ["b", "d", "f", "g", "j", "k", "l", "m", "n", "p", "r", "s", "t", "v", "z", "sh", "x", "ts", "ʃ", "ʒ", "ɕ", "ʂ", "ʐ"],
+      consonants: ["b", "d", "f", "g", "j", "k", "l", "m", "n", "p", "r", "s", "t", "v", "z", "sh", "x", "ts", "ʃ", "ʒ", "ɕ", "ʂ", "ʐ", "ɦ"],
       vowels: ["a", "e", "i", "o", "u", "ɪ", "ə", "ɛ", "æ", "ai", "ei", "oi", "iː", "eː", "oː", "uː"],
       syllablePreset: "cvc",
       maxSyllables: 2
@@ -196,8 +196,8 @@ window.LANGUAGE_PRESETS = {
       maxSyllables: 4
     },
     phonology: {
-      consonants: ["b", "d", "f", "g", "h", "k", "l", "m", "n", "p", "r", "s", "t", "v", "w", "z", "th", "ch", "sh", "ʃ", "ʒ", "θ", "ð", "kh", "ŋ"],
-      vowels: ["a", "e", "i", "o", "u", "æ", "ɔ", "aa", "ee", "oo", "ii", "ai", "au", "oi", "ae", "oe", "aː", "eː", "iː", "oː"],
+      consonants: ["b", "d", "f", "g", "h", "k", "l", "m", "n", "p", "r", "s", "t", "v", "w", "z", "th", "ch", "sh", "ʃ", "ʒ", "θ", "ð", "kh", "ŋ", "ɣ", "ʁ"],
+      vowels: ["a", "e", "i", "o", "u", "æ", "ɔ", "aa", "ee", "oo", "ii", "ai", "au", "oi", "ae", "oe", "aː", "eː", "iː", "oː", "ə"],
       syllablePreset: "ccvc",
       maxSyllables: 4
     },
